@@ -16,7 +16,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
 
 ## Supabase セットアップ
 
@@ -47,10 +47,10 @@ Vercel へデプロイする場合は、同じ 2 つの変数を Vercel のプ�
 
 | ファイル | 用途 |
 | --- | --- |
-| `lib/supabase/client.ts` | Client Component（`"use client"`）から使うクライアント |
-| `lib/supabase/server.ts` | Server Component / Route Handler / Server Action から使うクライアント（リクエストごとに生成する） |
-| `lib/supabase/proxy.ts` | アクセストークンを更新して Cookie を書き戻す処理 |
-| `proxy.ts` | 上記をすべてのリクエストで実行する（Next.js 16 で `middleware.ts` から改称） |
+| `src/lib/supabase/client.ts` | Client Component（`"use client"`）から使うクライアント |
+| `src/lib/supabase/server.ts` | Server Component / Route Handler / Server Action から使うクライアント（リクエストごとに生成する） |
+| `src/lib/supabase/proxy.ts` | アクセストークンを更新して Cookie を書き戻す処理 |
+| `src/proxy.ts` | 上記をすべてのリクエストで実行する（Next.js 16 で `middleware.ts` から改称） |
 
 セッションは Cookie で管理され、`proxy.ts` がトークンの更新を担当します。Server Component からは Cookie を書き込めないため、`proxy.ts` を消すとセッションが更新されず突然ログアウトされる原因になります。
 
