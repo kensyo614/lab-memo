@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ResourceType {
+  PDF
+  WEB
+  VIDEO
+  GITHUB
+  OTHER
+}
+
+model User {
+  user_id    String   @id
+  email      String   @unique
+  created_at DateTime @default(now())
+
+  resources Resource[]
+  tags      Tag[]
+  memos     Memo[]
+}
+
+model Resource {
+  resource_id   String        @id @default(cuid())
+  title         String
+  resource_type ResourceType
+  user_id       String
+  user          User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  url           String?
+  file_path     String?
+  memo          String?
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+  resourceTags  ResourceTag[]
+
+  @@index([user_id])
+}
+
+model Tag {
+  tag_id     String   @id @default(cuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  name       String
+  created_at DateTime @default(now())
+
+  resourceTags ResourceTag[]
+
+  @@unique([user_id, name])
+}
+
+model Memo {
+  memo_id    String   @id @default(cuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  title      String
+  memo       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+}
+
+model ResourceTag {
+  resource_id String
+  tag_id      String
+  resource    Resource @relation(fields: [resource_id], references: [resource_id], onDelete: Cascade)
+  tag         Tag      @relation(fields: [tag_id], references: [tag_id], onDelete: Cascade)
+
+  @@id([resource_id, tag_id])
+  @@index([tag_id])
+}
