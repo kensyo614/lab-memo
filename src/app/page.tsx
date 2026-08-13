@@ -1,6 +1,27 @@
 import Link from "next/link"
 import prisma from "@/lib/prisma"
+import type {ResourceType} from "@/generated/prisma/enums"
 import {Auth} from "@/lib/auth"
+
+const RESOURCE_TYPE_BADGE: Record<
+  ResourceType,
+  {label: string; color: string; backgroundColor: string}
+> = {
+  PDF:    {label: "PDF",    color: "#B14B2C", backgroundColor: "#FDF3EF"},
+  WEB:    {label: "WEB",    color: "#1A66C4", backgroundColor: "#F2F7FD"},
+  GITHUB: {label: "GIT",    color: "#2F6B4F", backgroundColor: "#F0F6F2"},
+  VIDEO:  {label: "動画",   color: "#6B4B8A", backgroundColor: "#F6F2F9"},
+  OTHER:  {label: "その他", color: "#767676", backgroundColor: "#F2F2F2"},
+}
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString("ja-JP", {
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Tokyo",
+  })
+}
+
 export default async function Page({searchParams}: PageProps<'/'>) {
   const user = await Auth()
 
@@ -11,6 +32,19 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     where: {user_id: user.id},
     orderBy: {name: "asc"},
     include: {_count: {select: {resourceTags: true}}},
+  })
+
+  const resources = await prisma.resource.findMany({
+    where: {
+      user_id: user.id,
+      resourceTags: selectedTagId
+        ? {some: {tag_id: selectedTagId}}
+        : undefined,
+    },
+    include: {resourceTags: {
+      include: {tag: true}
+    }},
+    orderBy: {created_at: "desc"}
   })
   return (
     <div style={{
@@ -150,10 +184,86 @@ export default async function Page({searchParams}: PageProps<'/'>) {
       <div style={{
         flex: 1,
         minWidth: 0,
-        backgroundColor: "black",
         display: "flex",
         flexDirection: "column",
       }}>
+        {resources.map((resource) => { 
+          const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
+          return (
+        <div
+          key={resource.resource_id}
+          style={{
+          display: "grid",
+          gridTemplateColumns: "64px 1fr 260px 96px",
+          alignItems: "center",
+          gap: 18,
+          height: 64,
+          borderBottom: "1px solid #F0F0F0",
+        }}>
+          <span style={{
+            color: badge.color,
+            backgroundColor: badge.backgroundColor,
+            fontSize: 11,
+            fontWeight: 500,
+            padding: "3px 8px",
+            borderRadius: 4,
+            justifySelf: "start"
+          }}>
+            {badge.label}
+          </span>
+
+          <div style={{minWidth: 0}}>
+            <div style={{
+              fontSize: 14.5,
+              fontWeight: 500,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}>
+              {resource.title}
+            </div>
+            <div style={{
+              fontSize: 12.5,
+              color: "#767676",
+              marginTop: 3,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}>
+              {resource.memo}
+            </div>
+          </div>
+          <div style={{
+            display: "flex",
+            gap: 5,
+            overflow: "hidden",
+          }}>
+            {resource.resourceTags.map((resourceTag) => {
+              return (
+            <span
+              key={resourceTag.tag_id}
+              style={{
+              fontSize: 11.5,
+              color: "#444444",
+              backgroundColor: "#F2F2F2",
+              padding: "3px 9px",
+              borderRadius: 4,
+              whiteSpace: "nowrap",
+            }}>
+              {resourceTag.tag.name}
+            </span>
+        )})}
+          </div>
+
+          <span style={{
+            fontSize: 11.5,
+            color: "#6E6E6E",
+            textAlign: "right",
+          }}>
+            {formatDate(resource.created_at)}
+          </span>
+        </div>
+        )})}
       </div>
     </div>
   )
