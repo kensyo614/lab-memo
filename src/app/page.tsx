@@ -2,6 +2,7 @@ import Link from "next/link"
 import prisma from "@/lib/prisma"
 import type {ResourceType} from "@/generated/prisma/enums"
 import {Auth} from "@/lib/auth"
+import {logout} from "@/lib/actions"
 
 const RESOURCE_TYPE_BADGE: Record<
   ResourceType,
@@ -27,6 +28,9 @@ export default async function Page({searchParams}: PageProps<'/'>) {
 
   const {tag} = await searchParams
   const selectedTagId = typeof tag === "string" ? tag : undefined
+  const {q} = await searchParams
+  const keyword =
+    typeof q === "string" && q.trim() !== "" ? q.trim() : undefined
 
   const tags = await prisma.tag.findMany({
     where: {user_id: user.id},
@@ -40,12 +44,25 @@ export default async function Page({searchParams}: PageProps<'/'>) {
       resourceTags: selectedTagId
         ? {some: {tag_id: selectedTagId}}
         : undefined,
+      OR: keyword
+        ? [
+            {title: {contains: keyword, mode: "insensitive"}},
+            {memo: {contains: keyword, mode: "insensitive"}},
+            {
+              resourceTags: {
+                some: {tag: {name: {contains: keyword, mode: "insensitive"}}},
+              },
+            },
+          ]
+        : undefined,
     },
     include: {resourceTags: {
       include: {tag: true}
     }},
     orderBy: {created_at: "desc"}
   })
+
+
   return (
     <div style={{
       display: "flex",
@@ -53,6 +70,8 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     }}
     >
       <div style={{
+        display: "flex",
+        flexDirection: "column",
         width: 240,
         flex: "none",
         backgroundColor: "#FAFAFA",
@@ -180,6 +199,59 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             )
           })}
         </div>
+          <div style={{
+            marginTop: "auto",
+            borderTop: "1px solid #EAEAEA",
+            padding: "14px 20px",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+          }}>
+            <span style={{
+              width: 28,
+              height: 28,
+              flex: "none",
+              borderRadius: "50%",
+              backgroundColor: "#EAEAEA",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              color: "#444444",
+            }}>
+              {user.email?.charAt(0).toUpperCase()}
+            </span>
+
+            <div style={{
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column"
+            }}>
+              <p style={{
+                fontSize: 12.5,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>
+                {user.email}
+              </p>
+              <form action={logout}>
+                <button type="submit"
+                style={{
+                  border: "none",
+                  background: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  fontSize: 11.5,
+                  color: "#6E6E6E",
+                  textAlign: "left",
+                }}>
+                  ログアウト
+                </button>
+              </form>
+            </div>
+          </div>
       </div>
       <div style={{
         flex: 1,
@@ -187,7 +259,121 @@ export default async function Page({searchParams}: PageProps<'/'>) {
         display: "flex",
         flexDirection: "column",
       }}>
-        {resources.map((resource) => { 
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          padding: "0 28px",
+          flex: "none",
+          height: 60,
+          borderBottom: "1px solid #EAEAEA",
+        }}>
+          <h1 style={{
+            fontSize: 18,
+            fontWeight: 600
+          }}>
+            情報一覧
+          </h1>
+          <form
+            action="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              width: 380,
+              height: 38,
+              border: "1px solid #DDDDDD",
+              borderRadius: 6,
+              padding: "0 12px",
+              marginLeft: 8,
+            }}
+          >
+            {selectedTagId && (
+              <input type="hidden" name="tag" value={selectedTagId} />
+            )}
+            <input
+              name="q"
+              defaultValue={keyword ?? ""}
+              placeholder="タイトル・メモ・タグを検索"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                border: "none",
+                outline: "none",
+                backgroundColor: "transparent",
+                fontSize: 13,
+              }}
+            />
+          </form>
+          <div style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            marginLeft: "auto"
+          }}>
+            <Link href="/memos" style={{
+              display: "flex",
+              alignItems: "center",
+              height: 38,
+              padding: "0 14px",
+              border: "1px solid #DDDDDD",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 6,
+              fontSize: 13,
+              color: "#111111",
+            }}>
+              自由メモ一覧
+            </Link>
+            <Link href="/resources/new" style={{
+              display: "flex",
+              alignItems: "center",
+              height: 38,
+              padding: "0 16px",
+              borderRadius: 6,
+              backgroundColor: "#1A66C4",
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#FFFFFF",
+            }}>
+              ＋ 情報を登録
+            </Link>
+          </div>
+        </div>
+        <div style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "0 28px",
+        }}>
+        {resources.length === 0 && (
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            padding: "80px 0",
+            textAlign: "center",
+          }}>
+            <p style={{fontSize: 14, color: "#444444"}}>
+              {keyword
+                ? `「${keyword}」に一致する情報はありません。`
+                : selectedTagId
+                  ? "このタグが付いた情報はありません。"
+                  : "まだ情報が登録されていません。"}
+            </p>
+            {keyword || selectedTagId ? (
+              <Link href="/" style={{fontSize: 12.5, color: "#1A66C4"}}>
+                すべての情報を見る
+              </Link>
+            ) : (
+              <p style={{fontSize: 12.5, color: "#767676"}}>
+                「＋ 情報を登録」から、論文やWebページを追加できます。
+              </p>
+            )}
+          </div>
+        )}
+
+        {resources.map((resource) => {
           const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
           return (
         <div
@@ -264,6 +450,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
           </span>
         </div>
         )})}
+        </div>
       </div>
     </div>
   )
