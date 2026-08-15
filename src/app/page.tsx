@@ -6,14 +6,22 @@ import {logout} from "@/lib/actions"
 
 const RESOURCE_TYPE_BADGE: Record<
   ResourceType,
-  {label: string; color: string; backgroundColor: string}
+  {label: string; filterLabel: string; color: string; backgroundColor: string}
 > = {
-  PDF:    {label: "PDF",    color: "#B14B2C", backgroundColor: "#FDF3EF"},
-  WEB:    {label: "WEB",    color: "#1A66C4", backgroundColor: "#F2F7FD"},
-  GITHUB: {label: "GIT",    color: "#2F6B4F", backgroundColor: "#F0F6F2"},
-  VIDEO:  {label: "動画",   color: "#6B4B8A", backgroundColor: "#F6F2F9"},
-  OTHER:  {label: "その他", color: "#767676", backgroundColor: "#F2F2F2"},
+  PDF:    {label: "PDF",    filterLabel: "PDF",       color: "#B14B2C", backgroundColor: "#FDF3EF"},
+  WEB:    {label: "WEB",    filterLabel: "Webページ", color: "#1A66C4", backgroundColor: "#F2F7FD"},
+  VIDEO:  {label: "動画",   filterLabel: "動画",      color: "#6B4B8A", backgroundColor: "#F6F2F9"},
+  GITHUB: {label: "GIT",    filterLabel: "GitHub",    color: "#2F6B4F", backgroundColor: "#F0F6F2"},
+  OTHER:  {label: "その他", filterLabel: "その他",    color: "#767676", backgroundColor: "#F2F2F2"},
 }
+
+const RESOURCE_TYPE_FILTERS: {value: ResourceType | undefined; label: string}[] = [
+  {value: undefined, label: "すべて"},
+  ...(Object.keys(RESOURCE_TYPE_BADGE) as ResourceType[]).map((value) => ({
+    value,
+    label: RESOURCE_TYPE_BADGE[value].filterLabel,
+  })),
+]
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("ja-JP", {
@@ -32,35 +40,76 @@ export default async function Page({searchParams}: PageProps<'/'>) {
   const keyword =
     typeof q === "string" && q.trim() !== "" ? q.trim() : undefined
 
+  const {type} = await searchParams
+  const selectedType =
+    typeof type === "string" && type in RESOURCE_TYPE_BADGE
+      ? (type as ResourceType)
+      : undefined
+
+  function buildHref(
+    overrides: Partial<Record<"tag" | "q" | "type", string | undefined>>,
+  ) {
+    const next = {
+      tag: selectedTagId,
+      q: keyword,
+      type: selectedType as string | undefined,
+      ...overrides,
+    }
+
+    const params = new URLSearchParams()
+    if (next.tag) params.set("tag", next.tag)
+    if (next.q) params.set("q", next.q)
+    if (next.type) params.set("type", next.type)
+
+    const query = params.toString()
+    return query ? `/?${query}` : "/"
+  }
+
   const tags = await prisma.tag.findMany({
     where: {user_id: user.id},
     orderBy: {name: "asc"},
     include: {_count: {select: {resourceTags: true}}},
   })
 
-  const resources = await prisma.resource.findMany({
-    where: {
-      user_id: user.id,
-      resourceTags: selectedTagId
-        ? {some: {tag_id: selectedTagId}}
-        : undefined,
-      OR: keyword
-        ? [
-            {title: {contains: keyword, mode: "insensitive"}},
-            {memo: {contains: keyword, mode: "insensitive"}},
-            {
-              resourceTags: {
-                some: {tag: {name: {contains: keyword, mode: "insensitive"}}},
+  const baseWhere = {
+    user_id: user.id,
+    resourceTags: selectedTagId
+      ? {some: {tag_id: selectedTagId}}
+      : undefined,
+    OR: keyword
+      ? [
+          {title: {contains: keyword, mode: "insensitive" as const}},
+          {memo: {contains: keyword, mode: "insensitive" as const}},
+          {
+            resourceTags: {
+              some: {
+                tag: {name: {contains: keyword, mode: "insensitive" as const}},
               },
             },
-          ]
-        : undefined,
-    },
+          },
+        ]
+      : undefined,
+  }
+
+  const resources = await prisma.resource.findMany({
+    where: {...baseWhere, resource_type: selectedType},
     include: {resourceTags: {
       include: {tag: true}
     }},
     orderBy: {created_at: "desc"}
   })
+
+
+  const typeCounts = await prisma.resource.groupBy({
+    by: ["resource_type"],
+    where: baseWhere,
+    _count: true,
+  })
+
+  const countByType = new Map(
+    typeCounts.map((row) => [row.resource_type, row._count]),
+  )
+  const totalCount = typeCounts.reduce((sum, row) => sum + row._count, 0)
 
 
   return (
@@ -174,7 +223,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             return (
               <Link
                 key={tag.tag_id}
-                href={isSelected ? "/" : `/?tag=${tag.tag_id}`}
+                href={buildHref({tag: isSelected ? undefined : tag.tag_id})}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -291,6 +340,9 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             {selectedTagId && (
               <input type="hidden" name="tag" value={selectedTagId} />
             )}
+            {selectedType && (
+              <input type="hidden" name="type" value={selectedType} />
+            )}
             <input
               name="q"
               defaultValue={keyword ?? ""}
@@ -337,6 +389,51 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             }}>
               ＋ 情報を登録
             </Link>
+          </div>
+        </div>
+        <div style={{
+          flex: "none",
+          borderBottom: "1px solid #F0F0F0",
+          padding: "16px 28px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10
+        }}>
+          <div style={{display: "flex", gap: 6}}>
+            {RESOURCE_TYPE_FILTERS.map((filter) => {
+              const isSelected = selectedType === filter.value
+              const count = filter.value
+                ? (countByType.get(filter.value) ?? 0)
+                : totalCount
+
+              return (
+                <Link
+                  key={filter.label}
+                  href={buildHref({type: filter.value})}
+                  style={{
+                    height: 30,
+                    padding: "0 13px",
+                    borderRadius: 6,
+                    fontSize: 12.5,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: isSelected ? "#111111" : undefined,
+                    border: isSelected ? "none" : "1px solid #DDDDDD",
+                    color: isSelected ? "#FFFFFF" : "#444444",
+                  }}
+                >
+                  {filter.label}
+                  <span style={{
+                    fontSize: 11.5,
+                    color: isSelected ? undefined : "#6E6E6E",
+                    opacity: isSelected ? 0.7 : undefined,
+                  }}>
+                    {count}
+                  </span>
+                </Link>
+              )
+            })}
           </div>
         </div>
         <div style={{
