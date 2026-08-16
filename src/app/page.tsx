@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import type {ResourceType} from "@/generated/prisma/enums"
 import {Auth} from "@/lib/auth"
 import {logout} from "@/lib/actions"
+import {Sort} from "@/components/SortSelect"
 
 const RESOURCE_TYPE_BADGE: Record<
   ResourceType,
@@ -22,6 +23,14 @@ const RESOURCE_TYPE_FILTERS: {value: ResourceType | undefined; label: string}[] 
     label: RESOURCE_TYPE_BADGE[value].filterLabel,
   })),
 ]
+
+const RESOURCE_SORT_ORDER = {
+  new:   {created_at: "desc"},
+  old:   {created_at: "asc"},
+  title: {title: "asc"},
+} as const
+
+type ResourceSort = keyof typeof RESOURCE_SORT_ORDER
 
 function formatDate(date: Date) {
   return date.toLocaleDateString("ja-JP", {
@@ -45,14 +54,20 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     typeof type === "string" && type in RESOURCE_TYPE_BADGE
       ? (type as ResourceType)
       : undefined
+  const {sort} = await searchParams
+  const selectedSort: ResourceSort =
+    typeof sort === "string" && sort in RESOURCE_SORT_ORDER
+      ? (sort as ResourceSort)
+      : "new"
 
   function buildHref(
-    overrides: Partial<Record<"tag" | "q" | "type", string | undefined>>,
+    overrides: Partial<Record<"tag" | "q" | "type" | "sort", string | undefined>>,
   ) {
     const next = {
       tag: selectedTagId,
       q: keyword,
       type: selectedType as string | undefined,
+      sort: selectedSort === "new" ? undefined : (selectedSort as string),
       ...overrides,
     }
 
@@ -60,6 +75,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     if (next.tag) params.set("tag", next.tag)
     if (next.q) params.set("q", next.q)
     if (next.type) params.set("type", next.type)
+    if (next.sort) params.set("sort", next.sort)
 
     const query = params.toString()
     return query ? `/?${query}` : "/"
@@ -96,7 +112,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     include: {resourceTags: {
       include: {tag: true}
     }},
-    orderBy: {created_at: "desc"}
+    orderBy: RESOURCE_SORT_ORDER[selectedSort]
   })
 
 
@@ -307,6 +323,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
+        backgroundColor: "#FFFFFF",
       }}>
         <div style={{
           display: "flex",
@@ -434,6 +451,12 @@ export default async function Page({searchParams}: PageProps<'/'>) {
                 </Link>
               )
             })}
+          </div>
+          <div style={{
+            display: "flex",
+            marginLeft: "auto",
+          }}>
+            <Sort value={selectedSort} />
           </div>
         </div>
         <div style={{
