@@ -7,6 +7,8 @@ import prisma from "./prisma"
 import {ResourceType} from "@/generated/prisma/enums"
 import {isFileResourceType} from "@/lib/resource"
 
+export type FormState = {error: string} | null
+
 export async function logout(){
     const supabase = await createClient()
     await supabase.auth.signOut()
@@ -14,7 +16,10 @@ export async function logout(){
     redirect("/login")
 }
 
-export async function createResource(formData: FormData){
+export async function createResource(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
     const user = await Auth()
 
     const title = String(formData.get("title") ?? "").trim()
@@ -24,24 +29,24 @@ export async function createResource(formData: FormData){
     const filePath = String(formData.get("file_path") ?? "").trim()
 
     if(title === ""){
-        return
+        return {error: "タイトルを入力してください。"}
     }
 
     if(!(resourceType in ResourceType)){
-        return
+        return {error: "種類を選んでください。"}
     }
 
     const isFileType = resourceType === "PDF" || resourceType === "OTHER"
 
     if(isFileType && filePath === ""){
-        return
+        return {error: "ファイルを選択してください。"}
     }
     if(!isFileType && url === ""){
-        return
+        return {error: "URL を入力してください。"}
     }
 
     if(isFileType && !filePath.startsWith(`${user.id}/`)){
-        return
+        return {error: "ファイルの保存先が不正です。選び直してください。"}
     }
 
     const requestedTagIds = formData.getAll("tag_ids").map(String)
@@ -121,12 +126,15 @@ export async function deleteResource(formData: FormData){
     redirect("/")
 }
 
-export async function updateResource(formData: FormData){
+export async function updateResource(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
     const user = await Auth()
 
     const resourceId = String(formData.get("resource_id") ?? "")
     if(resourceId === ""){
-        return
+        return {error: "更新対象が指定されていません。"}
     }
 
     const resource = await prisma.resource.findFirst({
@@ -135,7 +143,7 @@ export async function updateResource(formData: FormData){
     })
 
     if(!resource){
-        return
+        return {error: "対象の情報が見つかりませんでした。"}
     }
 
     const title = String(formData.get("title") ?? "").trim()
@@ -145,24 +153,24 @@ export async function updateResource(formData: FormData){
     const filePath = String(formData.get("file_path") ?? "").trim()
 
     if(title === ""){
-        return
+        return {error: "タイトルを入力してください。"}
     }
 
     if(!(resourceType in ResourceType)){
-        return
+        return {error: "種類を選んでください。"}
     }
 
     const isFileType = isFileResourceType(resourceType as ResourceType)
 
     if(isFileType && filePath === ""){
-        return
+        return {error: "ファイルを選択してください。"}
     }
     if(!isFileType && url === ""){
-        return
+        return {error: "URL を入力してください。"}
     }
 
     if(isFileType && !filePath.startsWith(`${user.id}/`)){
-        return
+        return {error: "ファイルの保存先が不正です。選び直してください。"}
     }
 
     const requestedTagIds = formData.getAll("tag_ids").map(String)

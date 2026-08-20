@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import type { FormState } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
 import type { Tag } from "@/generated/prisma/client";
 
@@ -24,11 +25,13 @@ type DefaultValues = {
 type Props = {
   tags: Tag[];
   userId: string;
-  action: (formData: FormData) => Promise<void>;
+  action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   defaultValues?: DefaultValues;
 };
 
 export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
+  const [state, formAction, isPending] = useActionState(action, null);
+
   const [resourceType, setResourceType] = useState(
     defaultValues?.resourceType ?? "PDF",
   );
@@ -103,7 +106,7 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
   return (
     <form
       id="resource-form"
-      action={action}
+      action={formAction}
       style={{
         width: 720,
         display: "flex",
@@ -111,6 +114,46 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
         gap: 24,
       }}
     >
+      {state?.error && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 9,
+            backgroundColor: "#FDF3EF",
+            border: "1px solid #F0D9D0",
+            borderRadius: 6,
+            padding: "10px 12px",
+          }}
+        >
+          <span
+            style={{
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              backgroundColor: "#B14B2C",
+              color: "#FFFFFF",
+              fontSize: 11,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: "none",
+              marginTop: 1,
+            }}
+          >
+            !
+          </span>
+          <span style={{ fontSize: 12.5, lineHeight: 1.7, color: "#8F3D24" }}>
+            {state.error}
+          </span>
+        </div>
+      )}
+
+      {isPending && (
+        <p style={{ fontSize: 12.5, color: "#6E6E6E" }}>保存中...</p>
+      )}
+
+
       {defaultValues && (
         <input
           type="hidden"
