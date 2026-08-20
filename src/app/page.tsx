@@ -1,28 +1,10 @@
 import Link from "next/link"
 import prisma from "@/lib/prisma"
 import type {ResourceType} from "@/generated/prisma/enums"
+import {RESOURCE_TYPE_BADGE, RESOURCE_TYPE_FILTERS, formatDate} from "@/lib/resource"
 import {Auth} from "@/lib/auth"
 import {Sort} from "@/components/SortSelect"
 import {Sidebar} from "@/components/Sidebar"
-
-const RESOURCE_TYPE_BADGE: Record<
-  ResourceType,
-  {label: string; filterLabel: string; color: string; backgroundColor: string}
-> = {
-  PDF:    {label: "PDF",    filterLabel: "PDF",       color: "#B14B2C", backgroundColor: "#FDF3EF"},
-  WEB:    {label: "WEB",    filterLabel: "Webページ", color: "#1A66C4", backgroundColor: "#F2F7FD"},
-  VIDEO:  {label: "動画",   filterLabel: "動画",      color: "#6B4B8A", backgroundColor: "#F6F2F9"},
-  GITHUB: {label: "GIT",    filterLabel: "GitHub",    color: "#2F6B4F", backgroundColor: "#F0F6F2"},
-  OTHER:  {label: "その他", filterLabel: "その他",    color: "#767676", backgroundColor: "#F2F2F2"},
-}
-
-const RESOURCE_TYPE_FILTERS: {value: ResourceType | undefined; label: string}[] = [
-  {value: undefined, label: "すべて"},
-  ...(Object.keys(RESOURCE_TYPE_BADGE) as ResourceType[]).map((value) => ({
-    value,
-    label: RESOURCE_TYPE_BADGE[value].filterLabel,
-  })),
-]
 
 const RESOURCE_SORT_ORDER = {
   new:   {created_at: "desc"},
@@ -31,14 +13,6 @@ const RESOURCE_SORT_ORDER = {
 } as const
 
 type ResourceSort = keyof typeof RESOURCE_SORT_ORDER
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString("ja-JP", {
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: "Asia/Tokyo",
-  })
-}
 
 export default async function Page({searchParams}: PageProps<'/'>) {
   const user = await Auth()
@@ -311,8 +285,9 @@ export default async function Page({searchParams}: PageProps<'/'>) {
         {resources.map((resource) => {
           const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
           return (
-        <div
+        <Link
           key={resource.resource_id}
+          href={`/resources/${resource.resource_id}`}
           style={{
           display: "grid",
           gridTemplateColumns: "64px 1fr 260px 96px",
@@ -320,6 +295,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
           gap: 18,
           height: 64,
           borderBottom: "1px solid #F0F0F0",
+          color: "#111111",
         }}>
           <span style={{
             color: badge.color,
@@ -383,7 +359,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
           }}>
             {formatDate(resource.created_at)}
           </span>
-        </div>
+        </Link>
         )})}
         </div>
       </div>

@@ -4,6 +4,7 @@ import Link from "next/link"
 import {Sidebar} from "@/components/Sidebar"
 import prisma from "@/lib/prisma"
 import { ResourceForm } from "@/components/ResourceForm"
+import { createResource } from "@/lib/actions"
 
 export default async function Page(){
     const user = await Auth()
@@ -100,7 +101,7 @@ export default async function Page(){
                     display: "flex",
                     justifyContent: "center",
                 }}>
-                    <ResourceForm tags={tags} userId={user.id} />
+                    <ResourceForm tags={tags} userId={user.id} action={createResource} />
                 </div>
             </div>
         </div>

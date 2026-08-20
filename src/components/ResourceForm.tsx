@@ -1,5 +1,4 @@
 "use client";
-import { createResource } from "@/lib/actions";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Tag } from "@/generated/prisma/client";
@@ -12,20 +11,40 @@ const RESOURCE_TYPES = [
   { value: "OTHER", label: "その他", isFile: true },
 ];
 
+type DefaultValues = {
+  resourceId: string;
+  resourceType: string;
+  title: string;
+  url: string;
+  memo: string;
+  filePath: string | null;
+  tagIds: string[];
+};
+
 type Props = {
   tags: Tag[];
   userId: string;
+  action: (formData: FormData) => Promise<void>;
+  defaultValues?: DefaultValues;
 };
 
-export function ResourceForm({ tags, userId }: Props) {
-  const [resourceType, setResourceType] = useState("PDF");
+export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
+  const [resourceType, setResourceType] = useState(
+    defaultValues?.resourceType ?? "PDF",
+  );
 
   const isFileType =
     RESOURCE_TYPES.find((item) => item.value === resourceType)?.isFile ?? false;
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    defaultValues?.tagIds ?? [],
+  );
 
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [filePath, setFilePath] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(
+    defaultValues?.filePath ? "登録済みのファイル" : null,
+  );
+  const [filePath, setFilePath] = useState<string | null>(
+    defaultValues?.filePath ?? null,
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -84,7 +103,7 @@ export function ResourceForm({ tags, userId }: Props) {
   return (
     <form
       id="resource-form"
-      action={createResource}
+      action={action}
       style={{
         width: 720,
         display: "flex",
@@ -92,6 +111,14 @@ export function ResourceForm({ tags, userId }: Props) {
         gap: 24,
       }}
     >
+      {defaultValues && (
+        <input
+          type="hidden"
+          name="resource_id"
+          value={defaultValues.resourceId}
+        />
+      )}
+
       <div
         style={{
           display: "flex",
@@ -271,6 +298,7 @@ export function ResourceForm({ tags, userId }: Props) {
         <input
           id="title"
           name="title"
+          defaultValue={defaultValues?.title ?? ""}
           style={{
             height: 38,
             border: "1px solid #DDDDDD",
@@ -376,6 +404,7 @@ export function ResourceForm({ tags, userId }: Props) {
         <textarea
           id="memo"
           name="memo"
+          defaultValue={defaultValues?.memo ?? ""}
           style={{
             height: 150,
             border: "1px solid #DDDDDD",
