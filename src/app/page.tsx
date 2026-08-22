@@ -14,6 +14,12 @@ const RESOURCE_SORT_ORDER = {
 
 type ResourceSort = keyof typeof RESOURCE_SORT_ORDER
 
+const RESOURCE_SORT_OPTIONS = [
+  {value: "new", label: "登録日の新しい順"},
+  {value: "old", label: "登録日の古い順"},
+  {value: "title", label: "タイトル順"},
+]
+
 export default async function Page({searchParams}: PageProps<'/'>) {
   const user = await Auth()
 
@@ -245,7 +251,11 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             display: "flex",
             marginLeft: "auto",
           }}>
-            <Sort value={selectedSort} />
+            <Sort
+              value={selectedSort}
+              basePath="/"
+              options={RESOURCE_SORT_OPTIONS}
+            />
           </div>
         </div>
         <div style={{

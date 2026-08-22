@@ -3,9 +3,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 type Props = {
     value: string
+    basePath: string
+    options: {value: string; label: string}[]
 }
 
-export function Sort({value}: Props){
+export function Sort({value, basePath, options}: Props){
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -19,7 +21,7 @@ export function Sort({value}: Props){
         }
 
         const query = params.toString()
-        router.push(query ? `/?${query}` : "/")
+        router.push(query ? `${basePath}?${query}` : basePath)
     }
 
     return (
@@ -37,9 +39,11 @@ export function Sort({value}: Props){
                 cursor: "pointer",
             }}
         >
-              <option value="new">登録日の新しい順</option>
-              <option value="old">登録日の古い順</option>
-              <option value="title">タイトル順</option>
+            {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                    {option.label}
+                </option>
+            ))}
         </select>
     )
 }
