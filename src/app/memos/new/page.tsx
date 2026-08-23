@@ -11,7 +11,7 @@ export default async function Page(){
             display: "flex",
             height: "100vh"
         }}>
-            <Sidebar />
+            <Sidebar current="memos" />
             <MemoForm action={createMemo} heading="メモを作成" />
         </div>
     )

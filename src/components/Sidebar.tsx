@@ -4,12 +4,14 @@ import Link from "next/link"
 import {logout} from "@/lib/actions"
 
 type Props = {
+    current?: "resources" | "memos"
     showTags?: boolean
     selectedTagId?: string
     buildTagHref?: (tagId: string | undefined) => string
 }
 
 export async function Sidebar({
+    current = "resources",
     showTags = false,
     selectedTagId,
     buildTagHref = (tagId) => (tagId ? `/?tag=${tagId}` : "/"),
@@ -53,10 +55,10 @@ export async function Sidebar({
               height: 36,
               padding: "0 12px",
               borderRadius: 6,
-              backgroundColor: "#EFEFEF",
+              backgroundColor: current === "resources" ? "#EFEFEF" : undefined,
               fontSize: 13.5,
-              fontWeight: 500,
-              color: "#111111",
+              fontWeight: current === "resources" ? 500 : 400,
+              color: current === "resources" ? "#111111" : "#444444",
             }}
           >
             情報一覧
@@ -78,8 +80,10 @@ export async function Sidebar({
               height: 36,
               padding: "0 12px",
               borderRadius: 6,
+              backgroundColor: current === "memos" ? "#EFEFEF" : undefined,
               fontSize: 13.5,
-              color: "#444444",
+              fontWeight: current === "memos" ? 500 : 400,
+              color: current === "memos" ? "#111111" : "#444444",
             }}
           >
             自由メモ

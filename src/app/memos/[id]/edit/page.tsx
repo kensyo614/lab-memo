@@ -25,7 +25,7 @@ export default async function Page({params}: PageProps<'/memos/[id]/edit'>){
             display: "flex",
             height: "100vh"
         }}>
-            <Sidebar />
+            <Sidebar current="memos" />
             <MemoForm
                 action={updateMemo}
                 heading="メモを編集"

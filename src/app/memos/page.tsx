@@ -49,7 +49,7 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
             display: "flex",
             height: "100vh"
         }}>
-            <Sidebar/>
+            <Sidebar current="memos" />
             <div style={{
                 flex: 1,
                 minWidth: 0,
