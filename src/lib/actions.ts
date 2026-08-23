@@ -230,3 +230,84 @@ export async function updateResource(
     revalidatePath(`/resources/${resource.resource_id}`)
     redirect(`/resources/${resource.resource_id}`)
 }
+
+export async function createMemo(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
+    const user = await Auth()
+    const title = String(formData.get("title") ?? "").trim()
+    const memo = String(formData.get("memo") ?? "").trim()
+
+    if(title === ""){
+        return {error: "タイトルを入力してください"}
+    }
+
+    await prisma.memo.create({
+        data: {
+            title,
+            memo: memo === "" ? null : memo,
+            user_id: user.id
+        }
+    })
+    revalidatePath("/memos")
+    redirect("/memos")
+}
+
+export async function updateMemo(_prevState: FormState, formData: FormData) : Promise<FormState>{
+    const user = await Auth()
+
+    const memoId = String(formData.get("memo_id") ?? "").trim()
+
+    if(memoId === ""){
+        return {error: "更新対象が指定されていません。"}
+    }
+
+    const existingMemo = await prisma.memo.findFirst({
+        where: {memo_id: memoId, user_id: user.id},
+        select: {memo_id: true, user_id: true}
+    })
+
+    if(!existingMemo){
+        return {error: "対象の情報が見つかりませんでした。"}
+    }
+
+    const title = String(formData.get("title") ?? "").trim()
+    const memo = String(formData.get("memo") ?? "").trim()
+
+    if(title === ""){
+        return {error: "タイトルを入力してください"}
+    }
+    await prisma.memo.update({
+        where: {memo_id: memoId},
+        data: {
+            title,
+            memo: memo === "" ? null : memo,
+        }
+    })
+    revalidatePath("/memos")
+    redirect("/memos")
+}
+
+export async function deleteMemo(_prevState: FormState, formData: FormData) : Promise<FormState>{
+    const user = await Auth()
+    const memoId = String(formData.get("memo_id") ?? "").trim()
+
+    if(memoId === ""){
+        return {error: "削除対象が指定されていません。"}
+    }
+
+    const existingMemo = await prisma.memo.findFirst({
+        where: {memo_id: memoId, user_id: user.id},
+        select: {memo_id: true, user_id: true}
+    })
+
+    if(!existingMemo){
+        return {error: "対象の情報が見つかりませんでした。"}
+    }
+
+    await prisma.memo.delete({where: {memo_id: memoId}})
+
+    revalidatePath("/memos")
+    redirect("/memos")
+}
