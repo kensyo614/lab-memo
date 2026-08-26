@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
 
   if (!code) {
-    return new Response("code がありません", { status: 400 });
+    return new Response("codeがありません", { status: 400 });
   }
 
   const supabase = await createClient();

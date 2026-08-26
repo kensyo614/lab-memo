@@ -2,6 +2,7 @@ import {Auth} from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import Link from "next/link"
 import {logout} from "@/lib/actions"
+import {TagList} from "@/components/TagList"
 
 type Props = {
     current?: "resources" | "memos"
@@ -25,7 +26,7 @@ export async function Sidebar({
           })
         : []
     return (
-        <div style={{
+    <div style={{
         display: "flex",
         flexDirection: "column",
         width: 240,
@@ -98,68 +99,17 @@ export async function Sidebar({
         </div>
 
         {showTags && (
-          <>
-          <div style={{
-            marginTop: 6,
-            padding: "14px 24px 8px",
-            borderTop: "1px solid #EAEAEA",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}>
-            <span style={{
-              fontSize: 11,
-              fontWeight: 500,
-              color: "#6E6E6E",
-            }}>
-              タグ
-            </span>
-            <span style={{
-              fontSize: 12,
-              color: "#1A66C4",
-            }}>
-              編集
-            </span>
-          </div>
-          <div style={{
-            padding: "4px 16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 1,
-          }}
-          >
-            {tags.map((tag) => {
-              const isSelected = tag.tag_id === selectedTagId
-  
-              return (
-                <Link
-                  key={tag.tag_id}
-                  href={buildTagHref(isSelected ? undefined : tag.tag_id)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    height: 30,
-                    padding: "0 8px",
-                    borderRadius: 6,
-                    fontSize: 12.5,
-                    backgroundColor: isSelected ? "#1A66C4" : undefined,
-                    color: isSelected ? "#FFFFFF" : "#444444",
-                  }}
-                >
-                  {tag.name}
-                  <span style={{
-                    marginLeft: "auto",
-                    fontSize: 11.5,
-                    color: isSelected ? undefined : "#6E6E6E",
-                    opacity: isSelected ? 0.85 : undefined,
-                  }}>
-                    {tag._count.resourceTags}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
-          </>
+          <TagList
+            items={tags.map((tag) => ({
+              tagId: tag.tag_id,
+              name: tag.name,
+              count: tag._count.resourceTags,
+              href: buildTagHref(
+                tag.tag_id === selectedTagId ? undefined : tag.tag_id,
+              ),
+              isSelected: tag.tag_id === selectedTagId,
+            }))}
+          />
         )}
           <div style={{
             marginTop: "auto",

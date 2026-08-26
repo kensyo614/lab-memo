@@ -311,3 +311,109 @@ export async function deleteMemo(_prevState: FormState, formData: FormData) : Pr
     revalidatePath("/memos")
     redirect("/memos")
 }
+
+export async function createTag(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
+    const user = await Auth()
+
+    const name = String(formData.get("name") ?? "").trim()
+
+    if(name === ""){
+        return {error: "タグ名を入力してください。"}
+    }
+
+    const duplicated = await prisma.tag.findUnique({
+        where: {user_id_name: {user_id: user.id, name}},
+        select: {tag_id: true},
+    })
+
+    if(duplicated){
+        return {error: `「${name}」は既にあります。`}
+    }
+
+    await prisma.tag.create({
+        data: {user_id: user.id, name},
+    })
+
+    revalidatePath("/", "layout")
+    return null
+}
+
+export async function updateTag(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
+    const user = await Auth()
+
+    const tagId = String(formData.get("tag_id") ?? "").trim()
+    const name = String(formData.get("name") ?? "").trim()
+
+    if(tagId === ""){
+        return {error: "更新対象が指定されていません。"}
+    }
+
+    if(name === ""){
+        return {error: "タグ名を入力してください。"}
+    }
+
+    const existingTag = await prisma.tag.findFirst({
+        where: {tag_id: tagId, user_id: user.id},
+        select: {tag_id: true, name: true},
+    })
+
+    if(!existingTag){
+        return {error: "対象のタグが見つかりませんでした。"}
+    }
+
+    if(existingTag.name === name){
+        return null
+    }
+
+    const duplicated = await prisma.tag.findUnique({
+        where: {user_id_name: {user_id: user.id, name}},
+        select: {tag_id: true},
+    })
+
+    if(duplicated){
+        return {error: `「${name}」は既にあります。`}
+    }
+
+    await prisma.tag.update({
+        where: {tag_id: existingTag.tag_id},
+        data: {name},
+    })
+
+    revalidatePath("/", "layout")
+    return null
+}
+
+export async function deleteTag(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
+    const user = await Auth()
+
+    const tagId = String(formData.get("tag_id") ?? "").trim()
+
+    if(tagId === ""){
+        return {error: "削除対象が指定されていません。"}
+    }
+
+    const existingTag = await prisma.tag.findFirst({
+        where: {tag_id: tagId, user_id: user.id},
+        select: {tag_id: true},
+    })
+
+    if(!existingTag){
+        return {error: "対象のタグが見つかりませんでした。"}
+    }
+
+    await prisma.tag.delete({
+        where: {tag_id: existingTag.tag_id},
+    })
+
+    revalidatePath("/", "layout")
+    return null
+}
