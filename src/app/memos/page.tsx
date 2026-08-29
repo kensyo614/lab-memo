@@ -200,6 +200,25 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
                         </div>
                     </Link>
                     )})}
+
+                    <Link
+                        href="/memos/new"
+                        style={{
+                            border: "1px dashed #DDDDDD",
+                            borderRadius: 6,
+                            backgroundColor: "#FAFAFA",
+                            padding: 20,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 8,
+                            color: "#6E6E6E",
+                        }}
+                    >
+                        <span style={{fontSize: 20, fontWeight: 300}}>＋</span>
+                        <span style={{fontSize: 12.5}}>新しいメモ</span>
+                    </Link>
                 </div>
             </div>
         </div>

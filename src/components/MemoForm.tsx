@@ -35,9 +35,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
     const [viewMode, setViewMode] = useState<ViewMode>("split")
 
     return (
-        <form
-            id="memo-form"
-            action={formAction}
+        <div
             style={{
                 flex: 1,
                 minWidth: 0,
@@ -123,6 +121,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
 
                     <button
                         type="submit"
+                        form="memo-form"
                         disabled={isPending}
                         style={{
                             height: 38,
@@ -173,10 +172,6 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                 </div>
             )}
 
-            {defaultValues && (
-                <input type="hidden" name="memo_id" value={defaultValues.memoId} />
-            )}
-
             <div style={{
                 flex: 1,
                 display: "flex",
@@ -218,13 +213,25 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                         display: "flex",
                         justifyContent: "center",
                     }}>
-                        <div style={{
+                        <form
+                            id="memo-form"
+                            action={formAction}
+                            style={{
                             width: "100%",
                             maxWidth: 640,
                             display: "flex",
                             flexDirection: "column",
                             gap: 18,
                         }}>
+                            {/* 編集時のみ。どのメモを更新するかを伝える */}
+                            {defaultValues && (
+                                <input
+                                    type="hidden"
+                                    name="memo_id"
+                                    value={defaultValues.memoId}
+                                />
+                            )}
+
                             <input
                                 name="title"
                                 value={title}
@@ -257,7 +264,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                                     resize: "none",
                                 }}
                             />
-                        </div>
+                        </form>
                     </div>
                 </div>
 
@@ -323,6 +330,6 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     )
 }

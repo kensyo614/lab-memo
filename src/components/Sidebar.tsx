@@ -34,14 +34,19 @@ export async function Sidebar({
         backgroundColor: "#FAFAFA",
       }}
       >
-        <p style={{
-          padding: "20px 20px 18px",
-          fontSize: 18,
-          fontWeight: 600,
-          borderBottom: "1px solid #EAEAEA",
-        }}>
+        <Link
+          href="/"
+          style={{
+            display: "block",
+            padding: "20px 20px 18px",
+            fontSize: 18,
+            fontWeight: 600,
+            borderBottom: "1px solid #EAEAEA",
+            color: "#111111",
+          }}
+        >
           LabMemo
-        </p>
+        </Link>
         <div style={{
           padding: "14px 12px",
           display: "flex",

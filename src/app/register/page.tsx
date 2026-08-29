@@ -14,6 +14,22 @@ export default function Page() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDisplayPassword, setIsDisplayPassword] = useState(false)
 
+    const passwordStrength =
+        password.length === 0
+            ? 0
+            : password.length < 8
+              ? 1
+              : /[a-zA-Z]/.test(password) && /[0-9]/.test(password)
+                ? 3
+                : 2
+
+    const passwordHint =
+        password.length < 8
+            ? "8文字以上"
+            : passwordStrength === 2
+              ? "やや弱い"
+              : "十分な強さ"
+
     const isPasswordMismatch =
         passwordConfirm !== "" && password !== passwordConfirm;
 
@@ -27,6 +43,10 @@ export default function Page() {
 
             if(email === "" || password === "" || passwordConfirm === ""){
                 setErrorMessage("すべての項目を入力してください。");
+                return;
+            }
+            if(password.length < 8){
+                setErrorMessage("パスワードは8文字以上にしてください。");
                 return;
             }
             if(password !== passwordConfirm){
@@ -217,6 +237,34 @@ export default function Page() {
                             {isDisplayPassword ? "隠す" : "表示"}
                         </button>
                     </div>
+
+                    <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginTop: 4,
+                    }}>
+                        {[1, 2, 3].map((level) => (
+                            <span
+                                key={level}
+                                style={{
+                                    flex: 1,
+                                    height: 3,
+                                    borderRadius: 2,
+                                    backgroundColor:
+                                        passwordStrength >= level ? "#1A66C4" : "#EAEAEA",
+                                }}
+                            />
+                        ))}
+                        <span style={{
+                            fontSize: 11.5,
+                            color: "#6E6E6E",
+                            minWidth: 56,
+                            whiteSpace: "nowrap",
+                        }}>
+                            {passwordHint}
+                        </span>
+                    </div>
                 </div>
                 <div style={{
                     display: "flex",
@@ -259,23 +307,43 @@ export default function Page() {
                         </p>
                     )}
                 </div>
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    style={{
-                        height: 42,
-                        border: "none",
-                        borderRadius: 6,
-                        backgroundColor: "#1A66C4",
-                        color: "#FFFFFF",
-                        fontSize: 14,
-                        fontWeight: 500,
-                        cursor: isSubmitting ? "not-allowed" : "pointer",
-                        opacity: isSubmitting ? 0.6 : 1,
-                        marginTop: 2,
-                    }}>
-                        {isSubmitting ? "登録中..." : "登録する"}
-                </button>
+                {completeMessage === "" ? (
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        style={{
+                            height: 42,
+                            border: "none",
+                            borderRadius: 6,
+                            backgroundColor: "#1A66C4",
+                            color: "#FFFFFF",
+                            fontSize: 14,
+                            fontWeight: 500,
+                            cursor: isSubmitting ? "not-allowed" : "pointer",
+                            opacity: isSubmitting ? 0.6 : 1,
+                            marginTop: 2,
+                        }}>
+                            {isSubmitting ? "登録中..." : "登録する"}
+                    </button>
+                ) : (
+                    <Link
+                        href="/login"
+                        style={{
+                            height: 42,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: 6,
+                            backgroundColor: "#1A66C4",
+                            color: "#FFFFFF",
+                            fontSize: 14,
+                            fontWeight: 500,
+                            marginTop: 2,
+                        }}
+                    >
+                        ログイン画面へ
+                    </Link>
+                )}
             </form>
             <div 
                 style={{

@@ -16,6 +16,8 @@ type Props = {
     items: TagItem[]
 }
 
+const VISIBLE_COUNT = 7
+
 function MenuIcon() {
     return (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="#444444">
@@ -48,12 +50,16 @@ export function TagList({items}: Props) {
     const [editingId, setEditingId] = useState<string | null>(null)
     const [isAdding, setIsAdding] = useState(false)
     const [deleteTarget, setDeleteTarget] = useState<TagItem | null>(null)
+    const [showAll, setShowAll] = useState(false)
 
     const [createState, createAction] = useActionState(createTag, null)
     const [updateState, updateAction] = useActionState(updateTag, null)
     const [deleteState, deleteAction] = useActionState(deleteTag, null)
 
     const error = createState?.error ?? updateState?.error ?? deleteState?.error
+
+    const visibleItems = showAll ? items : items.slice(0, VISIBLE_COUNT)
+    const hasMore = items.length > VISIBLE_COUNT
 
     return (
         <>
@@ -130,7 +136,7 @@ export function TagList({items}: Props) {
                     </form>
                 )}
 
-                {items.map((item) => {
+                {visibleItems.map((item) => {
                     if (editingId === item.tagId) {
                         return (
                             <form
@@ -322,6 +328,26 @@ export function TagList({items}: Props) {
                         </div>
                     )
                 })}
+
+                {hasMore && (
+                    <button
+                        type="button"
+                        onClick={() => setShowAll((prev) => !prev)}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: 30,
+                            padding: "0 8px",
+                            border: "none",
+                            background: "none",
+                            fontSize: 12.5,
+                            color: "#1A66C4",
+                            cursor: "pointer",
+                        }}
+                    >
+                        {showAll ? "表示を減らす" : "すべてのタグを見る"}
+                    </button>
+                )}
 
                 {error && (
                     <p style={{
