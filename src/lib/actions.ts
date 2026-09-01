@@ -9,6 +9,14 @@ import {isFileResourceType} from "@/lib/resource"
 
 export type FormState = {error: string} | null
 
+function isOwnStoragePath(filePath: string, userId: string) {
+    return (
+        filePath.startsWith(`${userId}/`) &&
+        !filePath.includes("..") &&
+        !filePath.includes("//")
+    )
+}
+
 export async function logout(){
     const supabase = await createClient()
     await supabase.auth.signOut()
@@ -45,7 +53,7 @@ export async function createResource(
         return {error: "URL を入力してください。"}
     }
 
-    if(isFileType && !filePath.startsWith(`${user.id}/`)){
+    if(isFileType && !isOwnStoragePath(filePath, user.id)){
         return {error: "ファイルの保存先が不正です。選び直してください。"}
     }
 
@@ -169,7 +177,7 @@ export async function updateResource(
         return {error: "URL を入力してください。"}
     }
 
-    if(isFileType && !filePath.startsWith(`${user.id}/`)){
+    if(isFileType && !isOwnStoragePath(filePath, user.id)){
         return {error: "ファイルの保存先が不正です。選び直してください。"}
     }
 

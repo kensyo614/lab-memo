@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return new Response(`ログインに失敗しました: ${error.message}`, {
+    console.error(error);
+    return new Response("ログインに失敗しました。もう一度お試しください。", {
       status: 400,
     });
   }
