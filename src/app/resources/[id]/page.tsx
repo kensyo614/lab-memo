@@ -1,10 +1,13 @@
 import Link from "next/link"
 import {notFound} from "next/navigation"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 import {Auth} from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import {Sidebar} from "@/components/Sidebar"
 import {DeleteResourceDialog} from "@/components/DeleteResourceDialog"
+import {ResourceMemoEditor} from "@/components/ResourceMemoEditor"
 import {createClient} from "@/lib/supabase/server"
 import {RESOURCE_TYPE_BADGE, formatFullDate, isFileResourceType} from "@/lib/resource"
 
@@ -33,7 +36,26 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
         signedUrl = data?.signedUrl ?? null
     }
 
-    const openUrl = isFile ? signedUrl : resource.url
+    const openUrl = isFile
+        ? resource.resource_type === "PDF"
+            ? signedUrl
+            : `/resources/${resource.resource_id}/download`
+        : resource.url
+
+    const isMarkdown = resource.resource_type === "MD"
+    const MAX_PREVIEW_SIZE = 1024 * 1024
+    let markdownBody: string | null = null
+
+    if (isMarkdown && resource.file_path) {
+        const supabase = await createClient()
+        const {data} = await supabase.storage
+            .from("resources")
+            .download(resource.file_path)
+
+        if (data && data.size <= MAX_PREVIEW_SIZE) {
+            markdownBody = await data.text()
+        }
+    }
 
     const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
 
@@ -74,7 +96,6 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                             title={resource.title}
                         />
 
-                        {/* TODO: 編集画面を作ったらパスを差し替える */}
                         <Link
                             href={`/resources/${resource.resource_id}/edit`}
                             style={{
@@ -95,7 +116,11 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                         {openUrl && (
                             <a
                                 href={openUrl}
-                                target="_blank"
+                                target={
+                                    isFile && resource.resource_type !== "PDF"
+                                        ? undefined
+                                        : "_blank"
+                                }
                                 rel="noopener noreferrer"
                                 style={{
                                     display: "flex",
@@ -109,7 +134,11 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                                     color: "#FFFFFF",
                                 }}
                             >
-                                {isFile ? "PDFを開く" : "URLを開く"}
+                                {isFile
+                                    ? resource.resource_type === "PDF"
+                                        ? "PDFを開く"
+                                        : "ダウンロード"
+                                    : "URLを開く"}
                             </a>
                         )}
                     </div>
@@ -131,7 +160,33 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                         padding: 24,
                         gap: 14,
                     }}>
-                        {isFile ? (
+                        {isMarkdown ? (
+                            markdownBody !== null ? (
+                                <div
+                                    className="markdown"
+                                    style={{
+                                        flex: 1,
+                                        width: 520,
+                                        maxWidth: "100%",
+                                        overflowY: "auto",
+                                        border: "1px solid #E5E5E5",
+                                        borderRadius: 6,
+                                        backgroundColor: "#FFFFFF",
+                                        padding: "24px 28px",
+                                        fontSize: 14,
+                                        lineHeight: 1.95,
+                                    }}
+                                >
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {markdownBody}
+                                    </ReactMarkdown>
+                                </div>
+                            ) : (
+                                <p style={{fontSize: 12.5, color: "#6E6E6E"}}>
+                                    中身を表示できませんでした。「ファイルを開く」からダウンロードできます。
+                                </p>
+                            )
+                        ) : isFile ? (
                             signedUrl ? (
                                 <iframe
                                     src={signedUrl}
@@ -258,30 +313,10 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                             flexDirection: "column",
                             gap: 12,
                         }}>
-                            <div style={{
-                                display: "flex",
-                                alignItems: "baseline",
-                                justifyContent: "space-between",
-                            }}>
-                                <span style={{fontSize: 11.5, color: "#6E6E6E"}}>
-                                    メモ
-                                </span>
-                                {/* TODO: この画面のまま編集できるようにする */}
-                            </div>
-
-                            {resource.memo ? (
-                                <p style={{
-                                    fontSize: 14,
-                                    lineHeight: 1.9,
-                                    whiteSpace: "pre-wrap",
-                                }}>
-                                    {resource.memo}
-                                </p>
-                            ) : (
-                                <p style={{fontSize: 13, color: "#767676"}}>
-                                    メモはまだありません。
-                                </p>
-                            )}
+                            <ResourceMemoEditor
+                                resourceId={resource.resource_id}
+                                memo={resource.memo}
+                            />
                         </div>
                     </div>
                 </div>

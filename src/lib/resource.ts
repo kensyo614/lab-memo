@@ -5,6 +5,7 @@ export const RESOURCE_TYPE_BADGE: Record<
   {label: string; filterLabel: string; color: string; backgroundColor: string}
 > = {
   PDF:    {label: "PDF",    filterLabel: "PDF",       color: "#B14B2C", backgroundColor: "#FDF3EF"},
+  MD:     {label: "MD",     filterLabel: "MD",        color: "#4A5B7A", backgroundColor: "#F2F4F8"},
   WEB:    {label: "WEB",    filterLabel: "Webページ", color: "#1A66C4", backgroundColor: "#F2F7FD"},
   VIDEO:  {label: "動画",   filterLabel: "動画",      color: "#6B4B8A", backgroundColor: "#F6F2F9"},
   GITHUB: {label: "GIT",    filterLabel: "GitHub",    color: "#2F6B4F", backgroundColor: "#F0F6F2"},
@@ -37,5 +38,5 @@ export function formatFullDate(date: Date) {
 }
 
 export function isFileResourceType(type: ResourceType) {
-  return type === "PDF" || type === "OTHER"
+  return type === "PDF" || type === "MD" || type === "OTHER"
 }

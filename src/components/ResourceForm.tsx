@@ -6,6 +6,7 @@ import type { Tag } from "@/generated/prisma/client";
 
 const RESOURCE_TYPES = [
   { value: "PDF", label: "PDF", isFile: true },
+  { value: "MD", label: "MD", isFile: true },
   { value: "WEB", label: "Webページ", isFile: false },
   { value: "VIDEO", label: "動画", isFile: false },
   { value: "GITHUB", label: "GitHub", isFile: false },
@@ -38,6 +39,20 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
 
   const isFileType =
     RESOURCE_TYPES.find((item) => item.value === resourceType)?.isFile ?? false;
+
+  const fileAccept =
+    resourceType === "PDF"
+      ? "application/pdf"
+      : resourceType === "MD"
+        ? ".md,.markdown,text/markdown"
+        : undefined;
+
+  const fileLabel =
+    resourceType === "PDF"
+      ? "PDF"
+      : resourceType === "MD"
+        ? "Markdown"
+        : "ファイル";
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     defaultValues?.tagIds ?? [],
   );
@@ -231,17 +246,17 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
             }}
           >
             <span style={{ fontSize: 13.5 }}>
-              ここにPDFをドロップ、または
+              ここに{fileLabel}をドロップ、または
               <span style={{ color: "#1A66C4" }}> ファイルを選択</span>
             </span>
             <span style={{ fontSize: 11.5, color: "#6E6E6E" }}>
-              PDF / 最大 50 MB
+              {resourceType === "OTHER" ? "すべてのファイル" : fileLabel} / 最大50MB
             </span>
           </label>
           <input
             id="file"
             type="file"
-            accept="application/pdf"
+            accept={fileAccept}
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
@@ -300,6 +315,7 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
           )}
 
           <input type="hidden" name="file_path" value={filePath ?? ""} />
+          <input type="hidden" name="file_name" value={fileName ?? ""} />
         </div>
       ) : (
         <div

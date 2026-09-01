@@ -14,6 +14,7 @@ datasource db {
 
 enum ResourceType {
   PDF
+  MD
   WEB
   VIDEO
   GITHUB
@@ -38,6 +39,7 @@ model Resource {
   user          User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   url           String?
   file_path     String?
+  file_name     String?
   memo          String?
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt

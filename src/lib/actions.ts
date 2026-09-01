@@ -35,6 +35,7 @@ export async function createResource(
     const memo = String(formData.get("memo") ?? "").trim()
     const resourceType = String(formData.get("resource_type") ?? "")
     const filePath = String(formData.get("file_path") ?? "").trim()
+    const fileName = String(formData.get("file_name") ?? "").trim()
 
     if(title === ""){
         return {error: "タイトルを入力してください。"}
@@ -44,7 +45,7 @@ export async function createResource(
         return {error: "種類を選んでください。"}
     }
 
-    const isFileType = resourceType === "PDF" || resourceType === "OTHER"
+    const isFileType = isFileResourceType(resourceType as ResourceType)
 
     if(isFileType && filePath === ""){
         return {error: "ファイルを選択してください。"}
@@ -92,6 +93,7 @@ export async function createResource(
             resource_type: resourceType as ResourceType,
             url: isFileType ? null : url,
             file_path: isFileType ? filePath : null,
+            file_name: isFileType && fileName !== "" ? fileName : null,
             memo: memo === "" ? null : memo,
             user_id: user.id,
             resourceTags: {
@@ -159,6 +161,7 @@ export async function updateResource(
     const memo = String(formData.get("memo") ?? "").trim()
     const resourceType = String(formData.get("resource_type") ?? "")
     const filePath = String(formData.get("file_path") ?? "").trim()
+    const fileName = String(formData.get("file_name") ?? "").trim()
 
     if(title === ""){
         return {error: "タイトルを入力してください。"}
@@ -221,6 +224,7 @@ export async function updateResource(
             resource_type: resourceType as ResourceType,
             url: isFileType ? null : url,
             file_path: isFileType ? filePath : null,
+            file_name: isFileType && fileName !== "" ? fileName : null,
             memo: memo === "" ? null : memo,
             resourceTags: {
                 deleteMany: {},
@@ -423,5 +427,37 @@ export async function deleteTag(
     })
 
     revalidatePath("/", "layout")
+    return null
+}
+
+export async function updateResourceMemo(
+    _prevState: FormState,
+    formData: FormData,
+): Promise<FormState> {
+    const user = await Auth()
+
+    const resourceId = String(formData.get("resource_id") ?? "").trim()
+    const memo = String(formData.get("memo") ?? "").trim()
+
+    if(resourceId === ""){
+        return {error: "更新対象が指定されていません。"}
+    }
+
+    const existingResource = await prisma.resource.findFirst({
+        where: {resource_id: resourceId, user_id: user.id},
+        select: {resource_id: true},
+    })
+
+    if(!existingResource){
+        return {error: "対象の情報が見つかりませんでした。"}
+    }
+
+    await prisma.resource.update({
+        where: {resource_id: existingResource.resource_id},
+        data: {memo: memo === "" ? null : memo},
+    })
+
+    revalidatePath("/")
+    revalidatePath(`/resources/${existingResource.resource_id}`)
     return null
 }
