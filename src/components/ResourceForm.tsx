@@ -66,6 +66,12 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
   const [isUploading, setIsUploading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
+  const [title, setTitle] = useState(defaultValues?.title ?? "");
+
+  const titleWithoutExtension = fileName
+    ? fileName.replace(/(?!^)\.[^./]+$/, "")
+    : "";
+
   const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -354,18 +360,57 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
         <label htmlFor="title" style={{ fontSize: 12.5, fontWeight: 500 }}>
           タイトル <span style={{ color: "#B14B2C" }}>*</span>
         </label>
-        <input
-          id="title"
-          name="title"
-          defaultValue={defaultValues?.title ?? ""}
-          style={{
-            height: 38,
-            border: "1px solid #DDDDDD",
-            borderRadius: 6,
-            padding: "0 12px",
-            fontSize: 13.5,
-          }}
-        />
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            id="title"
+            name="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              height: 38,
+              border: "1px solid #DDDDDD",
+              borderRadius: 6,
+              padding: "0 12px",
+              fontSize: 13.5,
+            }}
+          />
+          {isFileType && (
+          <button
+            type="button"
+            onClick={() => setTitle(titleWithoutExtension)}
+            style={{
+              flex: "none",
+              height: 38,
+              padding: "0 12px",
+              border: "1px solid #DDDDDD",
+              borderRadius: 6,
+              backgroundColor: "#FFFFFF",
+              fontSize: 12.5,
+              color: "#1A66C4",
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="#1A66C4"
+              strokeWidth="1.5"
+            >
+              <path d="M13 8a5 5 0 1 1-1.6-3.7" />
+              <polyline points="13,2.5 13,5 10.5,5" />
+            </svg>
+            ファイル名から入れる
+          </button>
+          )}
+        </div>
       </div>
 
 
