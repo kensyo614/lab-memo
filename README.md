@@ -1,74 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LabMemo
+LabMemoは研究時に参考にした論文やWebサイトなどを保存することができるサービスです．
 
-## Getting Started
+## URL
+https://lab-memo-pi.vercel.app/
 
-First, run the development server:
+## 目次
+- [このサービスを作成したきっかけ](#このサービスを作成したきっかけ)
+- [機能一覧](#機能一覧)
+- [使用技術](#使用技術)
+- [ER図](#er図)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## このサービスを作成したきっかけ
+私は現在，修士１年で研究を行っています．
+研究を行なっていると，関連研究の調査のためにたくさんの論文を読む必要があります．しかし，読んだ論文を後で見返す際に，どこにあるのかやどんなURLだったかなどを思い出すのがとても大変だったという経験がありました．
+そこで，これまでに参考にした論文やWebサイトなどをまとめて管理することができるサービスがあれば嬉しいと考え，このサービスを作成しました．
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## 機能一覧
 
-## Supabase セットアップ
+| メイン画面(情報一覧) | 情報登録 |
+| ---- | ---- |
+| ![メイン画面(情報一覧)](docs/images/メイン画面.png) | ![情報登録](docs/images/情報登録画面.png) |
+| 登録した情報を一覧で確認でき，タグによる絞り込みや情報の種類に応じた表示の切り替えが可能です．さらに，キーワード検索やソート機能も備えています． | 情報の種類を選んで，ファイルのアップロードやURLを登録できます．また，タグの作成もできます． |
 
-このプロジェクトは Supabase（Postgres / Auth / Storage）を利用します。
+| 自由メモ一覧 | 自由メモ作成 |
+| ---- | ---- |
+| ![自由メモ一覧](docs/images/自由メモ一覧画面.png) | ![自由メモ作成](docs/images/メモ作成画面.png) |
+| 作成した自由メモを確認することができます．ソート機能も備えています． | Markdown（MD）形式に対応しており，自由なレイアウトでメモを作成できます．編集画面とプレビュー画面の切り替えはもちろん，双方を同時に確認できる2分割表示にも対応しています． |
 
-### 1. Supabase プロジェクトを作成する
+| ログイン | 会員登録画面 |
+| ---- | ---- |
+| ![ログイン](docs/images/ログイン画面.png) | ![会員登録画面](docs/images/会員登録画面.png) |
+| メールアドレスとパスワードにより，ログインができます． | メールアドレスとパスワードを登録して会員登録ができます．メールアドレス認証もあります． |
 
-1. [supabase.com](https://supabase.com) にログインし、**New project** を作成する
-2. Database Password は控えておく（後から確認できない）
-3. Region は東京（`Northeast Asia (Tokyo)`）を選ぶとレイテンシが小さい
+## 使用技術
 
-### 2. 環境変数を設定する
+### フロントエンド
+- TypeScript 5
+- Next.js 16.3.0
+- React 19.2.8
+- react-markdown 10.1.0
+- remark-gfm 4.0.1
+- Tailwind CSS 4
 
-Supabase ダッシュボード上部の **Connect → App Frameworks → Next.js** に表示される値を `.env.local` にコピーします。
+### バックエンド
+- Next.js Server Actions
+- Prisma 7.9.1
+- PostgreSQL
+- Node.js 22.17.0
 
-| 変数名 | 値 |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Project URL（`https://xxxxx.supabase.co`） |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable key（`sb_publishable_...`） |
+### インフラ・外部サービス
+- Vercel
+- Supabase Auth
+- Supabase Storage
+- Supabase (PostgreSQL)
 
-Publishable key は旧称 anon key にあたるもので、ブラウザに公開される前提の鍵です。データの保護は Supabase 側の RLS（Row Level Security）で行います。
+### 開発環境
+- ESLint 9
+- Git / GitHub
 
-Secret key（`sb_secret_...` / 旧 `service_role`）は RLS を無視できる管理者権限の鍵です。`NEXT_PUBLIC_` を付けるとブラウザに露出するため、絶対に付けないこと。`.env.local` は `.gitignore` 済みです。
-
-Vercel へデプロイする場合は、同じ 2 つの変数を Vercel のプロジェクト設定にも登録してください。
-
-### 3. 構成
-
-| ファイル | 用途 |
-| --- | --- |
-| `src/lib/supabase/client.ts` | Client Component（`"use client"`）から使うクライアント |
-| `src/lib/supabase/server.ts` | Server Component / Route Handler / Server Action から使うクライアント（リクエストごとに生成する） |
-| `src/lib/supabase/proxy.ts` | アクセストークンを更新して Cookie を書き戻す処理 |
-| `src/proxy.ts` | 上記をすべてのリクエストで実行する（Next.js 16 で `middleware.ts` から改称） |
-
-セッションは Cookie で管理され、`proxy.ts` がトークンの更新を担当します。Server Component からは Cookie を書き込めないため、`proxy.ts` を消すとセッションが更新されず突然ログアウトされる原因になります。
-
-Storage を使う場合は追加設定は不要で、上記のクライアントから `supabase.storage.from("バケット名")` で扱えます（バケットの作成と RLS ポリシー設定は Supabase ダッシュボード側で行う）。
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ER図
+![ER図](docs/images/ER図.png)
