@@ -1,4 +1,4 @@
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import Link from "next/link"
 import {logout} from "@/lib/actions"
@@ -17,7 +17,7 @@ export async function Sidebar({
     selectedTagId,
     buildTagHref = (tagId) => (tagId ? `/?tag=${tagId}` : "/"),
 }: Props){
-    const user = await Auth()
+    const user = await requireUser()
     const tags = showTags
         ? await prisma.tag.findMany({
               where: {user_id: user.id},

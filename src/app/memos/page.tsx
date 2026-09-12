@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma"
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import { Sidebar } from "@/components/Sidebar"
 import Link from "next/link"
 import { formatFullDate } from "@/lib/resource"
@@ -20,7 +20,7 @@ const MEMO_SORT_OPTIONS = [
 ]
 
 export default async function Page({searchParams}: PageProps<'/memos'>){
-    const user = await Auth()
+    const user = await requireUser()
     const {q} = await searchParams
     const keyword =
         typeof q === "string" && q.trim() !== "" ? q.trim() : undefined

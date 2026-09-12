@@ -1,10 +1,10 @@
 import { Sidebar } from "@/components/Sidebar"
 import { MemoForm } from "@/components/MemoForm"
 import { createMemo } from "@/lib/actions"
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 
 export default async function Page(){
-    await Auth()
+    await requireUser()
 
     return (
         <div style={{

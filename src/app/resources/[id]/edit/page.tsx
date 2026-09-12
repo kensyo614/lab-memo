@@ -3,13 +3,13 @@ import Link from "next/link"
 import { ResourceForm } from "@/components/ResourceForm"
 import { updateResource } from "@/lib/actions"
 import { Sidebar } from "@/components/Sidebar"
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
 
 export default async function Page({params}: PageProps<'/resources/[id]/edit'>){
     const {id} = await params
-    const user = await Auth()
+    const user = await requireUser()
     const resource = await prisma.resource.findFirst({
         where: {resource_id: id, user_id: user.id},
         include: {resourceTags: {include: {tag: true}}}

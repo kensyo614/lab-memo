@@ -4,11 +4,11 @@ import { Sidebar } from "@/components/Sidebar"
 import { MemoForm } from "@/components/MemoForm"
 import { DeleteMemoDialog } from "@/components/DeleteMemoDialog"
 import { updateMemo } from "@/lib/actions"
-import { Auth } from "@/lib/auth"
+import { requireUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 
 export default async function Page({params}: PageProps<'/memos/[id]/edit'>){
-    const user = await Auth()
+    const user = await requireUser()
 
     const {id} = await params
 

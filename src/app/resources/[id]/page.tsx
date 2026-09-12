@@ -3,7 +3,7 @@ import {notFound} from "next/navigation"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import {Sidebar} from "@/components/Sidebar"
 import {DeleteResourceDialog} from "@/components/DeleteResourceDialog"
@@ -12,7 +12,7 @@ import {createClient} from "@/lib/supabase/server"
 import {RESOURCE_TYPE_BADGE, formatFullDate, isFileResourceType} from "@/lib/resource"
 
 export default async function Page({params}: PageProps<'/resources/[id]'>){
-    const user = await Auth()
+    const user = await requireUser()
 
     const {id} = await params
 

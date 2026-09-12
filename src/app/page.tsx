@@ -2,7 +2,7 @@ import Link from "next/link"
 import prisma from "@/lib/prisma"
 import type {ResourceType} from "@/generated/prisma/enums"
 import {RESOURCE_TYPE_BADGE, RESOURCE_TYPE_FILTERS, formatDate} from "@/lib/resource"
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import {Sort} from "@/components/SortSelect"
 import {Sidebar} from "@/components/Sidebar"
 
@@ -21,7 +21,7 @@ const RESOURCE_SORT_OPTIONS = [
 ]
 
 export default async function Page({searchParams}: PageProps<'/'>) {
-  const user = await Auth()
+  const user = await requireUser()
 
   const {tag} = await searchParams
   const selectedTagId = typeof tag === "string" ? tag : undefined

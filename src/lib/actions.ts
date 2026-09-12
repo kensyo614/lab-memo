@@ -2,7 +2,7 @@
 import {createClient} from "@/lib/supabase/server"
 import {redirect} from "next/navigation"
 import {revalidatePath} from "next/cache"
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import prisma from "./prisma"
 import {ResourceType} from "@/generated/prisma/enums"
 import {isFileResourceType} from "@/lib/resource"
@@ -28,7 +28,7 @@ export async function createResource(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const title = String(formData.get("title") ?? "").trim()
     const url = String(formData.get("url") ?? "").trim()
@@ -107,7 +107,7 @@ export async function createResource(
 }
 
 export async function deleteResource(formData: FormData){
-    const user = await Auth()
+    const user = await requireUser()
 
     const resourceId = String(formData.get("resource_id") ?? "")
     if(resourceId === ""){
@@ -140,7 +140,7 @@ export async function updateResource(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const resourceId = String(formData.get("resource_id") ?? "")
     if(resourceId === ""){
@@ -247,7 +247,7 @@ export async function createMemo(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
     const title = String(formData.get("title") ?? "").trim()
     const memo = String(formData.get("memo") ?? "").trim()
 
@@ -267,7 +267,7 @@ export async function createMemo(
 }
 
 export async function updateMemo(_prevState: FormState, formData: FormData) : Promise<FormState>{
-    const user = await Auth()
+    const user = await requireUser()
 
     const memoId = String(formData.get("memo_id") ?? "").trim()
 
@@ -302,7 +302,7 @@ export async function updateMemo(_prevState: FormState, formData: FormData) : Pr
 }
 
 export async function deleteMemo(_prevState: FormState, formData: FormData) : Promise<FormState>{
-    const user = await Auth()
+    const user = await requireUser()
     const memoId = String(formData.get("memo_id") ?? "").trim()
 
     if(memoId === ""){
@@ -328,7 +328,7 @@ export async function createTag(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const name = String(formData.get("name") ?? "").trim()
 
@@ -357,7 +357,7 @@ export async function updateTag(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const tagId = String(formData.get("tag_id") ?? "").trim()
     const name = String(formData.get("name") ?? "").trim()
@@ -405,7 +405,7 @@ export async function deleteTag(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const tagId = String(formData.get("tag_id") ?? "").trim()
 
@@ -434,7 +434,7 @@ export async function updateResourceMemo(
     _prevState: FormState,
     formData: FormData,
 ): Promise<FormState> {
-    const user = await Auth()
+    const user = await requireUser()
 
     const resourceId = String(formData.get("resource_id") ?? "").trim()
     const memo = String(formData.get("memo") ?? "").trim()

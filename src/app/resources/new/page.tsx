@@ -1,5 +1,5 @@
 
-import {Auth} from "@/lib/auth"
+import {requireUser} from "@/lib/auth"
 import Link from "next/link"
 import {Sidebar} from "@/components/Sidebar"
 import prisma from "@/lib/prisma"
@@ -7,7 +7,7 @@ import { ResourceForm } from "@/components/ResourceForm"
 import { createResource } from "@/lib/actions"
 
 export default async function Page(){
-    const user = await Auth()
+    const user = await requireUser()
 
     const tags = await prisma.tag.findMany({
         where: {user_id: user.id},

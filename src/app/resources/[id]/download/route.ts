@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server"
 
-import { Auth } from "@/lib/auth"
+import { requireUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { createClient } from "@/lib/supabase/server"
 
@@ -8,7 +8,7 @@ export async function GET(
     _request: NextRequest,
     {params}: RouteContext<'/resources/[id]/download'>,
 ) {
-    const user = await Auth()
+    const user = await requireUser()
 
     const {id} = await params
 
