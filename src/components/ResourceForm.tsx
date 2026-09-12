@@ -18,7 +18,7 @@ type DefaultValues = {
   resourceType: string;
   title: string;
   url: string;
-  memo: string;
+  note: string;
   filePath: string | null;
   tagIds: string[];
 };
@@ -500,15 +500,15 @@ export function ResourceForm({ tags, userId, action, defaultValues }: Props) {
             justifyContent: "space-between",
           }}
         >
-          <label htmlFor="memo" style={{ fontSize: 12.5, fontWeight: 500 }}>
+          <label htmlFor="note" style={{ fontSize: 12.5, fontWeight: 500 }}>
             メモ
           </label>
           <span style={{ fontSize: 11.5, color: "#6E6E6E" }}>任意</span>
         </div>
         <textarea
-          id="memo"
-          name="memo"
-          defaultValue={defaultValues?.memo ?? ""}
+          id="note"
+          name="note"
+          defaultValue={defaultValues?.note ?? ""}
           style={{
             height: 150,
             border: "1px solid #DDDDDD",

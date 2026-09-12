@@ -40,7 +40,7 @@ model Resource {
   url           String?
   file_path     String?
   file_name     String?
-  memo          String?
+  note          String?
   created_at    DateTime      @default(now())
   updated_at    DateTime      @updatedAt
   resourceTags  ResourceTag[]
@@ -65,7 +65,7 @@ model Memo {
   user_id    String
   user       User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   title      String
-  memo       String?
+  body       String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

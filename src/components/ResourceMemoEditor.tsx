@@ -5,10 +5,10 @@ import { updateResourceMemo } from "@/lib/actions"
 
 type Props = {
     resourceId: string
-    memo: string | null
+    note: string | null
 }
 
-export function ResourceMemoEditor({resourceId, memo}: Props) {
+export function ResourceMemoEditor({resourceId, note}: Props) {
     const [isEditing, setIsEditing] = useState(false)
     const [state, formAction, isPending] = useActionState(updateResourceMemo, null)
 
@@ -33,7 +33,7 @@ export function ResourceMemoEditor({resourceId, memo}: Props) {
                             cursor: "pointer",
                         }}
                     >
-                        {memo ? "編集" : "メモを書く"}
+                        {note ? "編集" : "メモを書く"}
                     </button>
                 </div>
 
@@ -41,13 +41,13 @@ export function ResourceMemoEditor({resourceId, memo}: Props) {
                     <p style={{fontSize: 12, color: "#B14B2C"}}>{state.error}</p>
                 )}
 
-                {memo ? (
+                {note ? (
                     <p style={{
                         fontSize: 14,
                         lineHeight: 1.9,
                         whiteSpace: "pre-wrap",
                     }}>
-                        {memo}
+                        {note}
                     </p>
                 ) : (
                     <p style={{fontSize: 13, color: "#767676"}}>
@@ -84,9 +84,9 @@ export function ResourceMemoEditor({resourceId, memo}: Props) {
             </div>
 
             <textarea
-                name="memo"
+                name="note"
                 autoFocus
-                defaultValue={memo ?? ""}
+                defaultValue={note ?? ""}
                 onKeyDown={(e) => {
                     if (e.key === "Escape") setIsEditing(false)
                 }}

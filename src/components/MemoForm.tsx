@@ -16,7 +16,7 @@ type ViewMode = (typeof VIEW_MODES)[number]["value"]
 type DefaultValues = {
     memoId: string,
     title: string,
-    memo: string,
+    body: string,
 }
 
 type Props = {
@@ -30,7 +30,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
     const [state, formAction, isPending] = useActionState(action, null)
 
     const [title, setTitle] = useState(defaultValues?.title ?? "")
-    const [markdown, setMarkdown] = useState(defaultValues?.memo ?? "")
+    const [markdown, setMarkdown] = useState(defaultValues?.body ?? "")
 
     const [viewMode, setViewMode] = useState<ViewMode>("split")
 
@@ -247,7 +247,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                                 }}
                             />
                             <textarea
-                                name="memo"
+                                name="body"
                                 value={markdown}
                                 onChange={(e) => setMarkdown(e.target.value)}
                                 placeholder="Markdownで自由に書けます"

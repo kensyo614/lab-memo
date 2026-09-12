@@ -113,7 +113,7 @@ export default async function Page({params}: PageProps<'/resources/[id]/edit'>){
                             resourceType: resource.resource_type,
                             title: resource.title,
                             url: resource.url ?? "",
-                            memo: resource.memo ?? "",
+                            note: resource.note ?? "",
                             filePath: resource.file_path,
                             tagIds: resource.resourceTags.map((rt) => rt.tag_id),
                         }}

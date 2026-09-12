@@ -35,7 +35,7 @@ export default async function Page({params}: PageProps<'/memos/[id]/edit'>){
                 defaultValues={{
                     memoId: memo.memo_id,
                     title: memo.title,
-                    memo: memo.memo ?? "",
+                    body: memo.body ?? "",
                 }}
             />
         </div>

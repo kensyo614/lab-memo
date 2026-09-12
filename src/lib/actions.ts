@@ -32,7 +32,7 @@ export async function createResource(
 
     const title = String(formData.get("title") ?? "").trim()
     const url = String(formData.get("url") ?? "").trim()
-    const memo = String(formData.get("memo") ?? "").trim()
+    const note = String(formData.get("note") ?? "").trim()
     const resourceType = String(formData.get("resource_type") ?? "")
     const filePath = String(formData.get("file_path") ?? "").trim()
     const fileName = String(formData.get("file_name") ?? "").trim()
@@ -94,7 +94,7 @@ export async function createResource(
             url: isFileType ? null : url,
             file_path: isFileType ? filePath : null,
             file_name: isFileType && fileName !== "" ? fileName : null,
-            memo: memo === "" ? null : memo,
+            note: note === "" ? null : note,
             user_id: user.id,
             resourceTags: {
                 create: [...tagIds].map((tag_id) => ({tag_id})),
@@ -158,7 +158,7 @@ export async function updateResource(
 
     const title = String(formData.get("title") ?? "").trim()
     const url = String(formData.get("url") ?? "").trim()
-    const memo = String(formData.get("memo") ?? "").trim()
+    const note = String(formData.get("note") ?? "").trim()
     const resourceType = String(formData.get("resource_type") ?? "")
     const filePath = String(formData.get("file_path") ?? "").trim()
     const fileName = String(formData.get("file_name") ?? "").trim()
@@ -225,7 +225,7 @@ export async function updateResource(
             url: isFileType ? null : url,
             file_path: isFileType ? filePath : null,
             file_name: isFileType && fileName !== "" ? fileName : null,
-            memo: memo === "" ? null : memo,
+            note: note === "" ? null : note,
             resourceTags: {
                 deleteMany: {},
                 create: [...tagIds].map((tag_id) => ({tag_id})),
@@ -249,7 +249,7 @@ export async function createMemo(
 ): Promise<FormState> {
     const user = await requireUser()
     const title = String(formData.get("title") ?? "").trim()
-    const memo = String(formData.get("memo") ?? "").trim()
+    const body = String(formData.get("body") ?? "").trim()
 
     if(title === ""){
         return {error: "タイトルを入力してください"}
@@ -258,7 +258,7 @@ export async function createMemo(
     await prisma.memo.create({
         data: {
             title,
-            memo: memo === "" ? null : memo,
+            body: body === "" ? null : body,
             user_id: user.id
         }
     })
@@ -285,7 +285,7 @@ export async function updateMemo(_prevState: FormState, formData: FormData) : Pr
     }
 
     const title = String(formData.get("title") ?? "").trim()
-    const memo = String(formData.get("memo") ?? "").trim()
+    const body = String(formData.get("body") ?? "").trim()
 
     if(title === ""){
         return {error: "タイトルを入力してください"}
@@ -294,7 +294,7 @@ export async function updateMemo(_prevState: FormState, formData: FormData) : Pr
         where: {memo_id: memoId},
         data: {
             title,
-            memo: memo === "" ? null : memo,
+            body: body === "" ? null : body,
         }
     })
     revalidatePath("/memos")
@@ -437,7 +437,7 @@ export async function updateResourceMemo(
     const user = await requireUser()
 
     const resourceId = String(formData.get("resource_id") ?? "").trim()
-    const memo = String(formData.get("memo") ?? "").trim()
+    const note = String(formData.get("note") ?? "").trim()
 
     if(resourceId === ""){
         return {error: "更新対象が指定されていません。"}
@@ -454,7 +454,7 @@ export async function updateResourceMemo(
 
     await prisma.resource.update({
         where: {resource_id: existingResource.resource_id},
-        data: {memo: memo === "" ? null : memo},
+        data: {note: note === "" ? null : note},
     })
 
     revalidatePath("/")

@@ -37,7 +37,7 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
             OR: keyword
                 ? [
                       {title: {contains: keyword, mode: "insensitive"}},
-                      {memo: {contains: keyword, mode: "insensitive"}},
+                      {body: {contains: keyword, mode: "insensitive"}},
                   ]
                 : undefined,
         },
@@ -193,7 +193,7 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
                             color: "#767676",
                             overflow: "hidden",
                         }}>
-                            {memo.memo}
+                            {memo.body}
                         </p>
                         <div style={{fontSize: 11.5, color: "#6E6E6E"}}>
                             {formatFullDate(memo.created_at)}

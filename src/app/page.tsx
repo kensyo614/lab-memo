@@ -69,7 +69,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     OR: keyword
       ? [
           {title: {contains: keyword, mode: "insensitive" as const}},
-          {memo: {contains: keyword, mode: "insensitive" as const}},
+          {note: {contains: keyword, mode: "insensitive" as const}},
           {
             resourceTags: {
               some: {
@@ -337,7 +337,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
             }}>
-              {resource.memo}
+              {resource.note}
             </div>
           </div>
           <div style={{

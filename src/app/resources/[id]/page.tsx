@@ -315,7 +315,7 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                         }}>
                             <ResourceMemoEditor
                                 resourceId={resource.resource_id}
-                                memo={resource.memo}
+                                note={resource.note}
                             />
                         </div>
                     </div>
