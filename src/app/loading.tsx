@@ -1,6 +1,4 @@
-function Bar({width, height}: {width: number | string; height: number}) {
-    return <div className="skeleton" style={{width, height}} />
-}
+import {SkeletonBar} from "@/components/SkeletonBar"
 
 export default function Loading() {
     return (
@@ -19,7 +17,7 @@ export default function Loading() {
                     padding: "20px 20px 18px",
                     borderBottom: "1px solid #EAEAEA",
                 }}>
-                    <Bar width={110} height={18} />
+                    <SkeletonBar width={110} height={18} />
                 </div>
 
                 <div style={{
@@ -28,8 +26,8 @@ export default function Loading() {
                     flexDirection: "column",
                     gap: 2,
                 }}>
-                    <Bar width="100%" height={36} />
-                    <Bar width="100%" height={36} />
+                    <SkeletonBar width="100%" height={36} />
+                    <SkeletonBar width="100%" height={36} />
                 </div>
 
                 <div style={{
@@ -37,7 +35,7 @@ export default function Loading() {
                     padding: "14px 24px 8px",
                     borderTop: "1px solid #EAEAEA",
                 }}>
-                    <Bar width={40} height={12} />
+                    <SkeletonBar width={40} height={12} />
                 </div>
 
                 <div style={{
@@ -52,7 +50,7 @@ export default function Loading() {
                             display: "flex",
                             alignItems: "center",
                         }}>
-                            <Bar width="70%" height={14} />
+                            <SkeletonBar width="70%" height={14} />
                         </div>
                     ))}
                 </div>
@@ -69,7 +67,7 @@ export default function Loading() {
                         className="skeleton"
                         style={{width: 28, height: 28, borderRadius: "50%", flex: "none"}}
                     />
-                    <Bar width={130} height={14} />
+                    <SkeletonBar width={130} height={14} />
                 </div>
             </div>
 
@@ -89,11 +87,11 @@ export default function Loading() {
                     height: 60,
                     borderBottom: "1px solid #EAEAEA",
                 }}>
-                    <Bar width={80} height={18} />
-                    <Bar width={380} height={38} />
+                    <SkeletonBar width={80} height={18} />
+                    <SkeletonBar width={380} height={38} />
                     <div style={{marginLeft: "auto", display: "flex", gap: 10}}>
-                        <Bar width={110} height={38} />
-                        <Bar width={120} height={38} />
+                        <SkeletonBar width={110} height={38} />
+                        <SkeletonBar width={120} height={38} />
                     </div>
                 </div>
 
@@ -107,11 +105,11 @@ export default function Loading() {
                 }}>
                     <div style={{display: "flex", gap: 6}}>
                         {[70, 60, 90, 62, 76, 66].map((width, i) => (
-                            <Bar key={i} width={width} height={30} />
+                            <SkeletonBar key={i} width={width} height={30} />
                         ))}
                     </div>
                     <div style={{marginLeft: "auto"}}>
-                        <Bar width={150} height={30} />
+                        <SkeletonBar width={150} height={30} />
                     </div>
                 </div>
 
@@ -132,7 +130,7 @@ export default function Loading() {
                                 borderBottom: "1px solid #F0F0F0",
                             }}
                         >
-                            <Bar width={40} height={18} />
+                            <SkeletonBar width={40} height={18} />
 
                             <div style={{
                                 minWidth: 0,
@@ -140,17 +138,17 @@ export default function Loading() {
                                 flexDirection: "column",
                                 gap: 7,
                             }}>
-                                <Bar width="55%" height={14} />
-                                <Bar width="80%" height={12} />
+                                <SkeletonBar width="55%" height={14} />
+                                <SkeletonBar width="80%" height={12} />
                             </div>
 
                             <div style={{display: "flex", gap: 5}}>
-                                <Bar width={78} height={18} />
-                                <Bar width={54} height={18} />
+                                <SkeletonBar width={78} height={18} />
+                                <SkeletonBar width={54} height={18} />
                             </div>
 
                             <div style={{display: "flex", justifyContent: "flex-end"}}>
-                                <Bar width={38} height={12} />
+                                <SkeletonBar width={38} height={12} />
                             </div>
                         </div>
                     ))}
