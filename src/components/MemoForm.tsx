@@ -30,7 +30,7 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
     const [state, formAction, isPending] = useActionState(action, null)
 
     const [title, setTitle] = useState(defaultValues?.title ?? "")
-    const [markdown, setMarkdown] = useState(defaultValues?.body ?? "")
+    const [body, setBody] = useState(defaultValues?.body ?? "")
 
     const [viewMode, setViewMode] = useState<ViewMode>("split")
 
@@ -195,13 +195,12 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                         fontSize: 12,
                         color: "#444444",
                     }}>
-                        {/* TODO: H1 B I などの記法を挿入するボタン */}
                         <span style={{
                             marginLeft: "auto",
                             fontSize: 11.5,
                             color: "#6E6E6E",
                         }}>
-                            {markdown.length.toLocaleString()} 字
+                            {body.length.toLocaleString()} 字
                         </span>
                     </div>
 
@@ -248,8 +247,8 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                             />
                             <textarea
                                 name="body"
-                                value={markdown}
-                                onChange={(e) => setMarkdown(e.target.value)}
+                                value={body}
+                                onChange={(e) => setBody(e.target.value)}
                                 placeholder="Markdownで自由に書けます"
                                 style={{
                                     flex: 1,
@@ -316,13 +315,13 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                             </div>
 
                             <div className="markdown" style={{fontSize: 14, lineHeight: 1.95}}>
-                                {markdown.trim() === "" ? (
+                                {body.trim() === "" ? (
                                     <p style={{fontSize: 13, color: "#767676"}}>
                                         本文を入力するとここに表示されます。
                                     </p>
                                 ) : (
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {markdown}
+                                        {body}
                                     </ReactMarkdown>
                                 )}
                             </div>

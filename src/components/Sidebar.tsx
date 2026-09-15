@@ -105,10 +105,10 @@ export async function Sidebar({
 
         {showTags && (
           <TagList
-            items={tags.map((tag) => ({
+            tags={tags.map((tag) => ({
               tagId: tag.tag_id,
               name: tag.name,
-              count: tag._count.resourceTags,
+              resourceCount: tag._count.resourceTags,
               href: buildTagHref(
                 tag.tag_id === selectedTagId ? undefined : tag.tag_id,
               ),
