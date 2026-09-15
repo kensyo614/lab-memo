@@ -1,18 +1,18 @@
 import Link from "next/link"
 import prisma from "@/lib/prisma"
 import type {ResourceType} from "@/generated/prisma/enums"
-import {RESOURCE_TYPE_BADGE, RESOURCE_TYPE_FILTERS, formatDate} from "@/lib/resource"
+import {RESOURCE_TYPE_STYLES, RESOURCE_TYPE_FILTERS, formatDate} from "@/lib/resource"
 import {requireUser} from "@/lib/auth"
-import {Sort} from "@/components/SortSelect"
+import {SortSelect} from "@/components/SortSelect"
 import {Sidebar} from "@/components/Sidebar"
 
-const RESOURCE_SORT_ORDER = {
+const RESOURCE_ORDER_BY = {
   new:   {created_at: "desc"},
   old:   {created_at: "asc"},
   title: {title: "asc"},
 } as const
 
-type ResourceSort = keyof typeof RESOURCE_SORT_ORDER
+type ResourceSortKey = keyof typeof RESOURCE_ORDER_BY
 
 const RESOURCE_SORT_OPTIONS = [
   {value: "new", label: "登録日の新しい順"},
@@ -31,19 +31,19 @@ export default async function Page({searchParams}: PageProps<'/'>) {
 
   const {type} = await searchParams
   const selectedType =
-    typeof type === "string" && type in RESOURCE_TYPE_BADGE
+    typeof type === "string" && type in RESOURCE_TYPE_STYLES
       ? (type as ResourceType)
       : undefined
   const {sort} = await searchParams
-  const selectedSort: ResourceSort =
-    typeof sort === "string" && sort in RESOURCE_SORT_ORDER
-      ? (sort as ResourceSort)
+  const selectedSort: ResourceSortKey =
+    typeof sort === "string" && sort in RESOURCE_ORDER_BY
+      ? (sort as ResourceSortKey)
       : "new"
 
-  function buildHref(
+  function buildListHref(
     overrides: Partial<Record<"tag" | "q" | "type" | "sort", string | undefined>>,
   ) {
-    const next = {
+    const appliedFilters = {
       tag: selectedTagId,
       q: keyword,
       type: selectedType as string | undefined,
@@ -52,10 +52,10 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     }
 
     const params = new URLSearchParams()
-    if (next.tag) params.set("tag", next.tag)
-    if (next.q) params.set("q", next.q)
-    if (next.type) params.set("type", next.type)
-    if (next.sort) params.set("sort", next.sort)
+    if (appliedFilters.tag) params.set("tag", appliedFilters.tag)
+    if (appliedFilters.q) params.set("q", appliedFilters.q)
+    if (appliedFilters.type) params.set("type", appliedFilters.type)
+    if (appliedFilters.sort) params.set("sort", appliedFilters.sort)
 
     const query = params.toString()
     return query ? `/?${query}` : "/"
@@ -86,7 +86,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
     include: {resourceTags: {
       include: {tag: true}
     }},
-    orderBy: RESOURCE_SORT_ORDER[selectedSort]
+    orderBy: RESOURCE_ORDER_BY[selectedSort]
   })
 
 
@@ -111,7 +111,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
       <Sidebar
         showTags
         selectedTagId={selectedTagId}
-        buildTagHref={(tagId) => buildHref({tag: tagId})}
+        buildTagHref={(tagId) => buildListHref({tag: tagId})}
       />
       <div style={{
         flex: 1,
@@ -221,7 +221,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
               return (
                 <Link
                   key={filter.label}
-                  href={buildHref({type: filter.value})}
+                  href={buildListHref({type: filter.value})}
                   style={{
                     height: 30,
                     padding: "0 13px",
@@ -251,7 +251,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
             display: "flex",
             marginLeft: "auto",
           }}>
-            <Sort
+            <SortSelect
               value={selectedSort}
               basePath="/"
               options={RESOURCE_SORT_OPTIONS}
@@ -293,7 +293,7 @@ export default async function Page({searchParams}: PageProps<'/'>) {
         )}
 
         {resources.map((resource) => {
-          const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
+          const badge = RESOURCE_TYPE_STYLES[resource.resource_type]
           return (
         <Link
           key={resource.resource_id}

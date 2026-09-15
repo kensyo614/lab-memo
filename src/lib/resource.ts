@@ -1,6 +1,6 @@
 import type {ResourceType} from "@/generated/prisma/enums"
 
-export const RESOURCE_TYPE_BADGE: Record<
+export const RESOURCE_TYPE_STYLES: Record<
   ResourceType,
   {label: string; filterLabel: string; color: string; backgroundColor: string}
 > = {
@@ -14,9 +14,9 @@ export const RESOURCE_TYPE_BADGE: Record<
 
 export const RESOURCE_TYPE_FILTERS: {value: ResourceType | undefined; label: string}[] = [
   {value: undefined, label: "すべて"},
-  ...(Object.keys(RESOURCE_TYPE_BADGE) as ResourceType[]).map((value) => ({
+  ...(Object.keys(RESOURCE_TYPE_STYLES) as ResourceType[]).map((value) => ({
     value,
-    label: RESOURCE_TYPE_BADGE[value].filterLabel,
+    label: RESOURCE_TYPE_STYLES[value].filterLabel,
   })),
 ]
 

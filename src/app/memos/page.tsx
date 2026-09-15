@@ -3,15 +3,15 @@ import {requireUser} from "@/lib/auth"
 import { Sidebar } from "@/components/Sidebar"
 import Link from "next/link"
 import { formatFullDate } from "@/lib/resource"
-import { Sort } from "@/components/SortSelect"
+import { SortSelect } from "@/components/SortSelect"
 
-const MEMO_SORT_ORDER = {
+const MEMO_ORDER_BY = {
     new:   {created_at: "desc"},
     old:   {created_at: "asc"},
     title: {title: "asc"},
 } as const
 
-type MemoSort = keyof typeof MEMO_SORT_ORDER
+type MemoSortKey = keyof typeof MEMO_ORDER_BY
 
 const MEMO_SORT_OPTIONS = [
     {value: "new", label: "作成日の新しい順"},
@@ -26,9 +26,9 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
         typeof q === "string" && q.trim() !== "" ? q.trim() : undefined
 
     const {sort} = await searchParams
-    const selectedSort: MemoSort =
-        typeof sort === "string" && sort in MEMO_SORT_ORDER
-            ? (sort as MemoSort)
+    const selectedSort: MemoSortKey =
+        typeof sort === "string" && sort in MEMO_ORDER_BY
+            ? (sort as MemoSortKey)
             : "new"
 
     const memos = await prisma.memo.findMany({
@@ -41,7 +41,7 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
                   ]
                 : undefined,
         },
-        orderBy: MEMO_SORT_ORDER[selectedSort],
+        orderBy: MEMO_ORDER_BY[selectedSort],
     })
 
     return (
@@ -151,7 +151,7 @@ export default async function Page({searchParams}: PageProps<'/memos'>){
                         {memos.length} 件
                     </span>
                     <div style={{marginLeft: "auto"}}>
-                        <Sort
+                        <SortSelect
                             value={selectedSort}
                             basePath="/memos"
                             options={MEMO_SORT_OPTIONS}

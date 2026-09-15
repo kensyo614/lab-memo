@@ -80,8 +80,6 @@ export default function Page() {
             setIsDisplayPassword((prev) => !prev);
         }
 
-
-
     return (
         <div
         style={{

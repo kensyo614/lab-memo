@@ -9,7 +9,7 @@ import {Sidebar} from "@/components/Sidebar"
 import {DeleteResourceDialog} from "@/components/DeleteResourceDialog"
 import {ResourceMemoEditor} from "@/components/ResourceMemoEditor"
 import {createClient} from "@/lib/supabase/server"
-import {RESOURCE_TYPE_BADGE, formatFullDate, isFileResourceType} from "@/lib/resource"
+import {RESOURCE_TYPE_STYLES, formatFullDate, isFileResourceType} from "@/lib/resource"
 
 export default async function Page({params}: PageProps<'/resources/[id]'>){
     const user = await requireUser()
@@ -57,7 +57,7 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
         }
     }
 
-    const badge = RESOURCE_TYPE_BADGE[resource.resource_type]
+    const badge = RESOURCE_TYPE_STYLES[resource.resource_type]
 
     return (
         <div style={{

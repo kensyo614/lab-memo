@@ -7,16 +7,16 @@ import { createTag, deleteTag, updateTag } from "@/lib/actions"
 export type TagItem = {
     tagId: string
     name: string
-    count: number
+    resourceCount: number
     href: string
     isSelected: boolean
 }
 
 type Props = {
-    items: TagItem[]
+    tags: TagItem[]
 }
 
-const VISIBLE_COUNT = 7
+const VISIBLE_TAG_COUNT = 7
 
 function MenuIcon() {
     return (
@@ -44,7 +44,7 @@ function TrashIcon() {
     )
 }
 
-export function TagList({items}: Props) {
+export function TagList({tags}: Props) {
     const [hoveredId, setHoveredId] = useState<string | null>(null)
     const [openMenuId, setOpenMenuId] = useState<string | null>(null)
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -58,8 +58,8 @@ export function TagList({items}: Props) {
 
     const error = createState?.error ?? updateState?.error ?? deleteState?.error
 
-    const visibleItems = showAll ? items : items.slice(0, VISIBLE_COUNT)
-    const hasMore = items.length > VISIBLE_COUNT
+    const visibleTags = showAll ? tags : tags.slice(0, VISIBLE_TAG_COUNT)
+    const hasMore = tags.length > VISIBLE_TAG_COUNT
 
     return (
         <>
@@ -136,21 +136,21 @@ export function TagList({items}: Props) {
                     </form>
                 )}
 
-                {visibleItems.map((item) => {
-                    if (editingId === item.tagId) {
+                {visibleTags.map((tag) => {
+                    if (editingId === tag.tagId) {
                         return (
                             <form
-                                key={item.tagId}
+                                key={tag.tagId}
                                 action={(formData) => {
                                     updateAction(formData)
                                     setEditingId(null)
                                 }}
                             >
-                                <input type="hidden" name="tag_id" value={item.tagId} />
+                                <input type="hidden" name="tag_id" value={tag.tagId} />
                                 <input
                                     name="name"
                                     autoFocus
-                                    defaultValue={item.name}
+                                    defaultValue={tag.name}
                                     onKeyDown={(e) => {
                                         if (e.key === "Escape") setEditingId(null)
                                     }}
@@ -179,26 +179,26 @@ export function TagList({items}: Props) {
                                         fontSize: 11,
                                         color: "#6E6E6E",
                                     }}>
-                                        {item.count}件に反映
+                                        {tag.resourceCount}件に反映
                                     </span>
                                 </div>
                             </form>
                         )
                     }
 
-                    const isHovered = hoveredId === item.tagId
-                    const isMenuOpen = openMenuId === item.tagId
+                    const isHovered = hoveredId === tag.tagId
+                    const isMenuOpen = openMenuId === tag.tagId
                     const showMenuButton = isHovered || isMenuOpen
 
                     return (
                         <div
-                            key={item.tagId}
+                            key={tag.tagId}
                             style={{position: "relative"}}
-                            onMouseEnter={() => setHoveredId(item.tagId)}
+                            onMouseEnter={() => setHoveredId(tag.tagId)}
                             onMouseLeave={() => setHoveredId(null)}
                         >
                             <Link
-                                href={item.href}
+                                href={tag.href}
                                 style={{
                                     display: "flex",
                                     alignItems: "center",
@@ -206,27 +206,27 @@ export function TagList({items}: Props) {
                                     padding: showMenuButton ? "0 4px 0 8px" : "0 8px",
                                     borderRadius: 6,
                                     fontSize: 12.5,
-                                    backgroundColor: item.isSelected
+                                    backgroundColor: tag.isSelected
                                         ? "#1A66C4"
                                         : showMenuButton
                                           ? "#EFEFEF"
                                           : undefined,
-                                    color: item.isSelected
+                                    color: tag.isSelected
                                         ? "#FFFFFF"
                                         : showMenuButton
                                           ? "#111111"
                                           : "#444444",
                                 }}
                             >
-                                {item.name}
+                                {tag.name}
 
                                 {showMenuButton ? (
                                     <span
                                         role="button"
-                                        aria-label={`${item.name} のメニュー`}
+                                        aria-label={`${tag.name} のメニュー`}
                                         onClick={(e) => {
                                             e.preventDefault()
-                                            setOpenMenuId(isMenuOpen ? null : item.tagId)
+                                            setOpenMenuId(isMenuOpen ? null : tag.tagId)
                                         }}
                                         style={{
                                             marginLeft: "auto",
@@ -246,10 +246,10 @@ export function TagList({items}: Props) {
                                     <span style={{
                                         marginLeft: "auto",
                                         fontSize: 11.5,
-                                        color: item.isSelected ? undefined : "#6E6E6E",
-                                        opacity: item.isSelected ? 0.85 : undefined,
+                                        color: tag.isSelected ? undefined : "#6E6E6E",
+                                        opacity: tag.isSelected ? 0.85 : undefined,
                                     }}>
-                                        {item.count}
+                                        {tag.resourceCount}
                                     </span>
                                 )}
                             </Link>
@@ -276,7 +276,7 @@ export function TagList({items}: Props) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setEditingId(item.tagId)
+                                                setEditingId(tag.tagId)
                                                 setOpenMenuId(null)
                                             }}
                                             style={{
@@ -301,7 +301,7 @@ export function TagList({items}: Props) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setDeleteTarget(item)
+                                                setDeleteTarget(tag)
                                                 setOpenMenuId(null)
                                             }}
                                             style={{
@@ -393,7 +393,7 @@ export function TagList({items}: Props) {
                         </h2>
                         <p style={{fontSize: 13, lineHeight: 1.8, color: "#444444"}}>
                             「{deleteTarget.name}」が削除され、
-                            {deleteTarget.count} 件の情報からこのタグが外れます。
+                            {deleteTarget.resourceCount} 件の情報からこのタグが外れます。
                             情報そのものは削除されません。
                         </p>
 

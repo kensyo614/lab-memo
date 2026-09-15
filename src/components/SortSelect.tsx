@@ -7,11 +7,11 @@ type Props = {
     options: {value: string; label: string}[]
 }
 
-export function Sort({value, basePath, options}: Props){
+export function SortSelect({value, basePath, options}: Props){
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    function sort(e: React.ChangeEvent<HTMLSelectElement>){
+    function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>){
         const params = new URLSearchParams(searchParams.toString())
 
         if (e.target.value === "new") {
@@ -27,7 +27,7 @@ export function Sort({value, basePath, options}: Props){
     return (
         <select
             value={value}
-            onChange={sort}
+            onChange={handleSortChange}
             style={{
                 height: 30,
                 padding: "0 11px",
