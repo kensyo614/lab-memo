@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma"
 import {Sidebar} from "@/components/Sidebar"
 import {DeleteResourceDialog} from "@/components/DeleteResourceDialog"
 import {ResourceMemoEditor} from "@/components/ResourceMemoEditor"
+import {CopyUrlButton} from "@/components/CopyUrlButton"
 import {createClient} from "@/lib/supabase/server"
 import {RESOURCE_TYPE_STYLES, formatFullDate, isFileResourceType} from "@/lib/resource"
 
@@ -113,6 +114,10 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                             編集
                         </Link>
 
+                        {!isFile && resource.url && (
+                            <CopyUrlButton url={resource.url} size="header" />
+                        )}
+
                         {openUrl && (
                             <a
                                 href={openUrl}
@@ -138,7 +143,7 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                                     ? resource.resource_type === "PDF"
                                         ? "PDFを開く"
                                         : "ダウンロード"
-                                    : "URLを開く"}
+                                    : "サイトを開く↗"}
                             </a>
                         )}
                     </div>
@@ -205,10 +210,7 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                                 </p>
                             )
                         ) : resource.url ? (
-                            <a
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <div
                                 style={{
                                     width: 520,
                                     maxWidth: "100%",
@@ -228,13 +230,48 @@ export default async function Page({params}: PageProps<'/resources/[id]'>){
                                 <span style={{fontSize: 15, fontWeight: 500, lineHeight: 1.55}}>
                                     {resource.title}
                                 </span>
+                                <div style={{
+                                    display: "flex",
+                                    alignItems: "flex-start",
+                                    gap: 10,
+                                }}>
+                                    <span style={{
+                                        flex: 1,
+                                        minWidth: 0,
+                                        fontSize: 12,
+                                        lineHeight: 1.7,
+                                        color: "#444444",
+                                        wordBreak: "break-all",
+                                        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                                    }}>
+                                        {resource.url}
+                                    </span>
+                                    <CopyUrlButton url={resource.url} />
+                                </div>
                                 <span style={{fontSize: 11.5, color: "#6E6E6E"}}>
                                     登録 {formatFullDate(resource.created_at)}
                                 </span>
-                                <span style={{fontSize: 12.5, color: "#1A66C4", marginTop: 4}}>
-                                    URLを開く →
-                                </span>
-                            </a>
+                                <a
+                                    href={resource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        alignSelf: "flex-start",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        height: 30,
+                                        padding: "0 14px",
+                                        borderRadius: 6,
+                                        backgroundColor: "#1A66C4",
+                                        fontSize: 12.5,
+                                        fontWeight: 500,
+                                        color: "#FFFFFF",
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    サイトを開く↗
+                                </a>
+                            </div>
                         ) : null}
                     </div>
 
