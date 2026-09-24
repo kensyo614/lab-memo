@@ -461,3 +461,47 @@ export async function updateResourceMemo(
     revalidatePath(`/resources/${existingResource.resource_id}`)
     return null
 }
+
+export async function approveOauthAuthorization(formData: FormData) {
+    await requireUser()
+
+    const authorizationId = String(formData.get("authorization_id") ?? "").trim()
+
+    if(authorizationId === ""){
+        return
+    }
+
+    const supabase = await createClient()
+    const {data, error} = await supabase.auth.oauth.approveAuthorization(
+        authorizationId,
+    )
+
+    if(error || !data){
+        console.error(error)
+        return
+    }
+
+    redirect(data.redirect_url)
+}
+
+export async function denyOauthAuthorization(formData: FormData) {
+    await requireUser()
+
+    const authorizationId = String(formData.get("authorization_id") ?? "").trim()
+
+    if(authorizationId === ""){
+        return
+    }
+
+    const supabase = await createClient()
+    const {data, error} = await supabase.auth.oauth.denyAuthorization(
+        authorizationId,
+    )
+
+    if(error || !data){
+        console.error(error)
+        return
+    }
+
+    redirect(data.redirect_url)
+}
