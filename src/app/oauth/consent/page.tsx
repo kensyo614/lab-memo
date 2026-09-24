@@ -77,14 +77,13 @@ export default async function Page({searchParams}: PageProps<'/oauth/consent'>){
                             width: 44,
                             height: 44,
                             borderRadius: 10,
-                            border: "1px solid #E5E5E5",
-                            backgroundColor: "#FAFAFA",
+                            backgroundColor: "#D97757",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: 15,
                             fontWeight: 600,
-                            color: "#444444",
+                            color: "#FFFFFF",
                         }}>
                             {clientInitial}
                         </span>
