@@ -121,7 +121,7 @@ export default async function Page({searchParams}: PageProps<'/oauth/consent'>){
                         </h1>
                         <p style={{fontSize: 13.5, lineHeight: 1.8, color: "#444444"}}>
                             <strong style={{fontWeight: 600}}>{clientName}</strong>
-                            {" "}があなたのLabMemoのデータを<br />読み取ろうとしています。
+                            {" "}があなたのLabMemoのデータを<br />読み取り・書き込みしようとしています。
                         </p>
                     </div>
                 </div>
@@ -198,25 +198,37 @@ export default async function Page({searchParams}: PageProps<'/oauth/consent'>){
                                 </div>
                             </div>
                         ))}
-                    </div>
 
-                    <div style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 11,
-                        paddingTop: 2,
-                    }}>
-                        <svg
-                            width="16" height="16" viewBox="0 0 16 16"
-                            fill="none" stroke="#767676" strokeWidth="1.6"
-                            style={{flex: "none", marginTop: 3}}
-                        >
-                            <line x1="3.5" y1="3.5" x2="12.5" y2="12.5" />
-                            <line x1="12.5" y1="3.5" x2="3.5" y2="12.5" />
-                        </svg>
-                        <div style={{fontSize: 13, color: "#444444", lineHeight: 1.7}}>
-                            データの作成・変更・削除は
-                            <strong style={{fontWeight: 600}}>できません</strong>
+                        <div style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: 11,
+                            backgroundColor: "#FDF3EF",
+                            border: "1px solid #F0D9D0",
+                            borderRadius: 6,
+                            padding: "11px 13px",
+                            marginTop: 2,
+                        }}>
+                            <svg
+                                width="16" height="16" viewBox="0 0 16 16"
+                                fill="none" stroke="#B14B2C" strokeWidth="1.6"
+                                style={{flex: "none", marginTop: 2}}
+                            >
+                                <path d="M11.5 2.8l1.7 1.7-7.4 7.4-2.3.6.6-2.3z" />
+                            </svg>
+                            <div>
+                                <div style={{fontSize: 13.5, fontWeight: 500, color: "#8F3D24"}}>
+                                    資料の登録
+                                </div>
+                                <div style={{
+                                    fontSize: 12.5,
+                                    color: "#8F3D24",
+                                    lineHeight: 1.7,
+                                    marginTop: 3,
+                                }}>
+                                    URLの資料を新しく追加します。既存の資料の変更・削除はできません。
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
