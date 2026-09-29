@@ -6,16 +6,9 @@ import {requireUser} from "@/lib/auth"
 import prisma from "./prisma"
 import {ResourceType} from "@/generated/prisma/enums"
 import {isFileResourceType} from "@/lib/resource"
+import {createResourceForUser, isOwnStoragePath} from "@/lib/resourceService"
 
 export type FormState = {error: string} | null
-
-function isOwnStoragePath(filePath: string, userId: string) {
-    return (
-        filePath.startsWith(`${userId}/`) &&
-        !filePath.includes("..") &&
-        !filePath.includes("//")
-    )
-}
 
 export async function logout(){
     const supabase = await createClient()
@@ -30,77 +23,20 @@ export async function createResource(
 ): Promise<FormState> {
     const user = await requireUser()
 
-    const title = String(formData.get("title") ?? "").trim()
-    const url = String(formData.get("url") ?? "").trim()
-    const note = String(formData.get("note") ?? "").trim()
-    const resourceType = String(formData.get("resource_type") ?? "")
-    const filePath = String(formData.get("file_path") ?? "").trim()
-    const fileName = String(formData.get("file_name") ?? "").trim()
-
-    if(title === ""){
-        return {error: "タイトルを入力してください。"}
-    }
-
-    if(!(resourceType in ResourceType)){
-        return {error: "種類を選んでください。"}
-    }
-
-    const isFileType = isFileResourceType(resourceType as ResourceType)
-
-    if(isFileType && filePath === ""){
-        return {error: "ファイルを選択してください。"}
-    }
-    if(!isFileType && url === ""){
-        return {error: "URL を入力してください。"}
-    }
-
-    if(isFileType && !isOwnStoragePath(filePath, user.id)){
-        return {error: "ファイルの保存先が不正です。選び直してください。"}
-    }
-
-    const requestedTagIds = formData.getAll("tag_ids").map(String)
-
-    const newTagNames = [
-        ...new Set(
-            String(formData.get("new_tags") ?? "")
-                .split(/\s+/)
-                .map((name) => name.trim())
-                .filter((name) => name !== ""),
-        ),
-    ]
-
-    const ownedTags = requestedTagIds.length > 0
-        ? await prisma.tag.findMany({
-              where: {user_id: user.id, tag_id: {in: requestedTagIds}},
-              select: {tag_id: true},
-          })
-        : []
-
-    const tagIds = new Set(ownedTags.map((tag) => tag.tag_id))
-
-    for (const name of newTagNames) {
-        const tag = await prisma.tag.upsert({
-            where: {user_id_name: {user_id: user.id, name}},
-            update: {},
-            create: {user_id: user.id, name},
-        })
-        tagIds.add(tag.tag_id)
-    }
-
-    await prisma.resource.create({
-        data: {
-            title,
-            resource_type: resourceType as ResourceType,
-            url: isFileType ? null : url,
-            file_path: isFileType ? filePath : null,
-            file_name: isFileType && fileName !== "" ? fileName : null,
-            note: note === "" ? null : note,
-            user_id: user.id,
-            resourceTags: {
-                create: [...tagIds].map((tag_id) => ({tag_id})),
-            },
-        }
+    const result = await createResourceForUser(user.id, {
+        title: String(formData.get("title") ?? ""),
+        resourceType: String(formData.get("resource_type") ?? ""),
+        url: String(formData.get("url") ?? ""),
+        filePath: String(formData.get("file_path") ?? ""),
+        fileName: String(formData.get("file_name") ?? ""),
+        note: String(formData.get("note") ?? ""),
+        tagIds: formData.getAll("tag_ids").map(String),
+        tagNames: String(formData.get("new_tags") ?? "").split(/\s+/),
     })
+
+    if("error" in result){
+        return result
+    }
 
     revalidatePath("/")
     redirect("/")

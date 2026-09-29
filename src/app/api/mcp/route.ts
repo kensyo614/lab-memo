@@ -1,10 +1,12 @@
 import type {AuthInfo} from "@modelcontextprotocol/server"
 import {createClient} from "@supabase/supabase-js"
 import {createMcpHandler, withMcpAuth} from "mcp-handler"
+import {revalidatePath} from "next/cache"
 import {z} from "zod"
 
 import prisma from "@/lib/prisma"
 import {SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL} from "@/lib/supabase/env"
+import {createResourceForUser} from "@/lib/resourceService"
 
 function getUserId(authInfo: AuthInfo | undefined): string | null {
     const userId = authInfo?.extra?.userId
@@ -238,6 +240,114 @@ const handler = createMcpHandler((server) => {
                 content,
                 contentNote,
                 createdAt: resource.created_at.toISOString(),
+            }
+
+            return {
+                content: [{type: "text" as const, text: JSON.stringify(result)}],
+            }
+        },
+    )
+
+    server.registerTool(
+        "create_resource",
+        {
+            title: "情報の登録",
+            description:
+                "URLの資料（Webページ・動画・GitHub）を新しく登録する。" +
+                "PDFやMarkdownなどのファイルは登録できない。" +
+                "同じURLがすでに登録されていれば，新しく作らず既存の資料を返す（created: false）。" +
+                "タグを付けるときは，先にlist_tagsで既存のタグ名を確認し，" +
+                "表記の揺れで似たタグを増やさないよう，なるべく既存の名前を使うこと。",
+            inputSchema: z.object({
+                title: z
+                    .string()
+                    .describe("資料のタイトル"),
+                url: z
+                    .string()
+                    .describe("資料のURL。httpまたはhttpsで始まるもの"),
+                type: z
+                    .enum(["WEB", "VIDEO", "GITHUB"])
+                    .describe("資料の種類。WebページはWEB，動画はVIDEO，GitHubのリポジトリはGITHUB"),
+                tags: z
+                    .array(z.string())
+                    .optional()
+                    .describe("付けるタグ名の配列。同じ名前のタグがなければ新しく作る"),
+                note: z
+                    .string()
+                    .optional()
+                    .describe("資料に付けるメモ"),
+            }),
+            annotations: {
+                readOnlyHint: false,
+                destructiveHint: false,
+            },
+        },
+        async ({title, url, type, tags, note}, ctx) => {
+            const authInfo = ctx.http?.authInfo
+            const userId = getUserId(authInfo)
+
+            if (!userId || !authInfo) {
+                return errorResult("認証されていません。")
+            }
+
+            const trimmedUrl = url.trim()
+            let parsedUrl: URL
+            try {
+                parsedUrl = new URL(trimmedUrl)
+            } catch {
+                return errorResult("URLの形式が正しくありません。")
+            }
+            if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+                return errorResult("URLはhttpまたはhttpsで始まるものだけ登録できます。")
+            }
+
+            const existing = await prisma.resource.findFirst({
+                where: {user_id: userId, url: trimmedUrl},
+                include: {resourceTags: {include: {tag: true}}},
+            })
+            if (existing) {
+                const result = {
+                    id: existing.resource_id,
+                    title: existing.title,
+                    url: existing.url,
+                    type: existing.resource_type,
+                    tags: existing.resourceTags.map((rt) => rt.tag.name),
+                    created: false,
+                }
+                return {
+                    content: [{type: "text" as const, text: JSON.stringify(result)}],
+                }
+            }
+
+            const created = await createResourceForUser(userId, {
+                title,
+                resourceType: type,
+                url: trimmedUrl,
+                filePath: "",
+                fileName: "",
+                note: note ?? "",
+                tagIds: [],
+                tagNames: tags ?? [],
+            })
+
+            if ("error" in created) {
+                return errorResult(created.error)
+            }
+
+            revalidatePath("/")
+
+            const resource = await prisma.resource.findFirst({
+                where: {user_id: userId, resource_id: created.resourceId},
+                include: {resourceTags: {include: {tag: true}}},
+            })
+
+            const result = {
+                id: created.resourceId,
+                title: resource?.title ?? title,
+                url: resource?.url ?? trimmedUrl,
+                type,
+                tags: resource?.resourceTags.map((rt) => rt.tag.name) ?? [],
+                created: true,
             }
 
             return {
