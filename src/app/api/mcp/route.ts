@@ -18,6 +18,8 @@ function errorResult(message: string) {
     }
 }
 
+const MAX_CONTENT_SIZE = 1024 * 1024
+
 function buildSnippet(note: string | null, words: string[]): string | null {
     if (!note) {
         return null
@@ -162,6 +164,80 @@ const handler = createMcpHandler((server) => {
                 total: scored.length,
                 returned: limited.length,
                 truncated: scored.length > limited.length,
+            }
+
+            return {
+                content: [{type: "text" as const, text: JSON.stringify(result)}],
+            }
+        },
+    )
+
+    server.registerTool(
+        "get_resource",
+        {
+            title: "資料の取得",
+            description:
+                "資料を1件取得し，メモの全文と詳細を返す。" +
+                "idにはsearch_resourcesの結果に含まれるidをそのまま渡す。" +
+                "種類がMDのときは，ファイルの本文もcontentに含める。" +
+                "PDFなど他のファイルの本文は取得できない（contentはnull）。",
+            inputSchema: z.object({
+                id: z
+                    .string()
+                    .describe("search_resourcesの結果に含まれる資料のid"),
+            }),
+        },
+        async ({id}, ctx) => {
+            const authInfo = ctx.http?.authInfo
+            const userId = getUserId(authInfo)
+            if (!userId || !authInfo) {
+                return errorResult("認証されていません。")
+            }
+
+            const resource = await prisma.resource.findFirst({
+                where: {user_id: userId, resource_id: id},
+                include: {resourceTags: {include: {tag: true}}},
+            })
+            if (!resource) {
+                return errorResult(
+                    "指定されたidの資料が見つかりませんでした。search_resourcesでidを確認してください。",
+                )
+            }
+
+            let content: string | null = null
+            let contentNote: string | null = null
+
+            if (resource.resource_type === "MD" && resource.file_path) {
+                const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+                    auth: {persistSession: false, autoRefreshToken: false},
+                    global: {headers: {Authorization: `Bearer ${authInfo.token}`}},
+                })
+
+                const {data, error} = await supabase.storage
+                    .from("resources")
+                    .download(resource.file_path)
+
+                if (error || !data) {
+                    console.error(error)
+                    contentNote = "ファイルの本文を取得できませんでした。"
+                } else if (data.size > MAX_CONTENT_SIZE) {
+                    contentNote = "ファイルが大きすぎるため本文は省略しました。"
+                } else {
+                    content = await data.text()
+                }
+            }
+
+            const result = {
+                id: resource.resource_id,
+                title: resource.title,
+                type: resource.resource_type,
+                url: resource.url,
+                fileName: resource.file_name,
+                tags: resource.resourceTags.map((rt) => rt.tag.name),
+                note: resource.note,
+                content,
+                contentNote,
+                createdAt: resource.created_at.toISOString(),
             }
 
             return {
