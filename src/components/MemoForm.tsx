@@ -222,7 +222,6 @@ export function MemoForm({action, defaultValues, heading, deleteButton}: Props){
                             flexDirection: "column",
                             gap: 18,
                         }}>
-                            {/* 編集時のみ。どのメモを更新するかを伝える */}
                             {defaultValues && (
                                 <input
                                     type="hidden"
