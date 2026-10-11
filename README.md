@@ -7,6 +7,7 @@ https://lab-memo-pi.vercel.app/
 ## 目次
 - [このサービスを作成したきっかけ](#このサービスを作成したきっかけ)
 - [機能一覧](#機能一覧)
+- [AIから使う（MCP）](#aiから使うmcp)
 - [使用技術](#使用技術)
 - [ER図](#er図)
 
@@ -32,6 +33,33 @@ https://lab-memo-pi.vercel.app/
 | ---- | ---- |
 | ![ログイン](docs/images/ログイン画面.png) | ![会員登録画面](docs/images/会員登録画面.png) |
 | メールアドレスとパスワードにより，ログインができます． | メールアドレスとパスワードを登録して会員登録ができます．メールアドレス認証もあります． |
+
+## AIから使う（MCP）
+Claude CodeなどのAIから，LabMemoの資料を検索・閲覧・登録することができます．
+会話の中で「RAGの資料を探して要約して」と頼むだけで，画面を開かずに登録済みの資料を参照できます．
+
+### 接続方法（Claude Code）
+次のコマンドでLabMemoを追加します．
+
+```bash
+claude mcp add --transport http --scope user labmemo https://lab-memo-pi.vercel.app/api/mcp
+```
+
+追加後にClaude Codeで`/mcp`を開き，labmemoを認証します．
+ブラウザでLabMemoにログインし，アクセスを許可すると使えるようになります．
+
+### ツール一覧
+| ツール | できること |
+| ---- | ---- |
+| `search_resources` | タイトル・メモ・タグから検索します．複数語を渡すと，一致した語が多い順に返します． |
+| `get_resource` | 資料1件の詳細とメモの全文を取得します．Markdownのファイルは本文も返します． |
+| `list_tags` | タグの一覧と，各タグが付いた資料の件数を返します． |
+| `create_resource` | URLの資料（Webページ・動画・GitHub）を登録します． |
+
+### 注意
+- PDFの本文は取得できません．
+- 登録できるのはURLの資料だけです．PDFやMarkdownなどのファイルは登録できません．
+- 資料の変更・削除はできません．
 
 ## 使用技術
 
