@@ -20,6 +20,8 @@ function errorResult(message: string) {
     }
 }
 
+export const maxDuration = 30
+
 const MAX_CONTENT_SIZE = 1024 * 1024
 
 function buildSnippet(note: string | null, words: string[]): string | null {
@@ -355,6 +357,8 @@ const handler = createMcpHandler((server) => {
             }
         },
     )
+}, {
+    maxSubscriptions: 0,
 })
 
 async function verifyToken(
