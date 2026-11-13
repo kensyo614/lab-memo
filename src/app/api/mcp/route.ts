@@ -358,8 +358,6 @@ const handler = createMcpHandler((server) => {
         },
     )
 }, {
-    // ツールしか使わないため，サーバーからの通知用 SSE ストリームは開かない．
-    // 開くとクライアント接続中ずっと関数が起動し続け，Provisioned Memory を消費する．
     maxSubscriptions: 0,
 })
 
