@@ -20,6 +20,8 @@ function errorResult(message: string) {
     }
 }
 
+export const maxDuration = 30
+
 const MAX_CONTENT_SIZE = 1024 * 1024
 
 function buildSnippet(note: string | null, words: string[]): string | null {
@@ -355,6 +357,10 @@ const handler = createMcpHandler((server) => {
             }
         },
     )
+}, {
+    // ツールしか使わないため，サーバーからの通知用 SSE ストリームは開かない．
+    // 開くとクライアント接続中ずっと関数が起動し続け，Provisioned Memory を消費する．
+    maxSubscriptions: 0,
 })
 
 async function verifyToken(
